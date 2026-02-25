@@ -79,6 +79,15 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
   </nav>
 );
 
+const Toast = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
+  <div className="toast-container">
+    <div className={`toast ${type}`}>
+      {type === 'success' ? <CheckCircle size={24} color="hsl(var(--primary))" /> : <XCircle size={24} color="hsl(var(--accent))" />}
+      <span style={{ fontWeight: 600, letterSpacing: '0.01em' }}>{message}</span>
+    </div>
+  </div>
+);
+
 const QuizView = ({ category, onFinish }: any) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -206,7 +215,7 @@ const ResultsView = ({ score, total, answers, onBack }: any) => {
   );
 }
 
-const AdminPanel = ({ categories, fetchCategories }: any) => {
+const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
   const [newCat, setNewCat] = useState('');
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
@@ -230,10 +239,11 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
       .then(() => {
         setNewCat('');
         fetchCategories();
+        showToast('Kategori başarıyla eklendi!');
       })
       .catch(err => {
         console.error('Category error:', err);
-        alert('Kategori eklenemedi: ' + (err.response?.data?.message || err.message));
+        showToast('Kategori eklenemedi: ' + (err.response?.data?.message || err.message), 'error');
       });
   };
 
@@ -243,7 +253,8 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
     axios.put(`${API_BASE}/categories/${id}`, { name }).then(() => {
       setEditingCatId(null);
       fetchCategories();
-    }).catch(err => alert('Güncelleme hatası: ' + err.message));
+      showToast('Kategori güncellendi');
+    }).catch(err => showToast('Güncelleme hatası: ' + err.message, 'error'));
   };
 
   const deleteCat = (id: number) => {
@@ -264,18 +275,18 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
 
     if (isEditingQ && editingQId) {
       axios.put(`${API_BASE}/questions/${editingQId}`, payload).then(() => {
-        alert('Soru güncellendi');
+        showToast('Soru başarıyla güncellendi ✨');
         setIsEditingQ(false);
         setEditingQId(null);
         fetchQs(selectedCatId);
         resetQForm();
-      });
+      }).catch(err => showToast('Soru güncellenirken hata oluştu', 'error'));
     } else {
       axios.post(`${API_BASE}/questions`, payload).then(() => {
-        alert('Soru eklendi');
+        showToast('İşlem başarılı! Yeni soru eklendi 🎉');
         fetchQs(selectedCatId);
         resetQForm();
-      });
+      }).catch(err => showToast('Soru kaydedilirken hata oluştu', 'error'));
     }
   };
 
@@ -542,6 +553,12 @@ export default function App() {
   const [selCat, setSelCat] = useState<Category | null>(null);
   const [result, setResult] = useState<any>(null);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchCats = () => {
     setApiError(null);
@@ -647,9 +664,10 @@ export default function App() {
         )}
 
         {isAdmin && view === 'admin' && (
-          <AdminPanel categories={categories} fetchCategories={fetchCats} />
+          <AdminPanel categories={categories} fetchCategories={fetchCats} showToast={showToast} />
         )}
       </main>
+      {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   );
 }

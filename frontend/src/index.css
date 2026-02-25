@@ -331,3 +331,11 @@ select.input-field {
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
+
+/* Premium Toast Notification */
+.toast-container { position: fixed; top: 2.5rem; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; }
+.toast { background: hsla(var(--card), 0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid hsla(var(--primary), 0.3); padding: 1.25rem 2.5rem; border-radius: 1.5rem; display: flex; align-items: center; gap: 1.25rem; box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px hsla(var(--primary), 0.4); animation: toastSlideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; pointer-events: auto; min-width: 320px; }
+@keyframes toastSlideIn { from { opacity: 0; transform: translateY(-30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.toast.success { border-color: hsla(var(--primary), 0.6); }
+.toast.error { border-color: hsla(var(--accent), 0.6); }
+@media (max-width: 768px) { .toast-container { top: auto; bottom: 2.5rem; width: 90%; } .toast { padding: 1.125rem 1.75rem; font-size: 1.05rem; justify-content: center; min-width: auto; width: 100%; } }
