@@ -12,8 +12,7 @@ import {
   Trash2,
   Edit,
   Save,
-  ChevronLeft,
-  ImageIcon
+  ChevronLeft
 } from 'lucide-react';
 
 // --- Dynamic API URL ---
@@ -26,6 +25,12 @@ const getApiBase = () => {
   return '/api';
 };
 const API_BASE = getApiBase();
+
+// --- Supabase Client ---
+import { createClient } from '@supabase/supabase-js';
+const SUPABASE_URL = 'https://utammtangicjaseucyhd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VsoaC3k3K4rzPPPJTBNAGw_m8KUh2fF';
+const supabaseStorage = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 interface Category {
   id: number;
@@ -78,6 +83,100 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
     </div>
   </nav>
 );
+
+const FileUpload = ({ currentImage, onUpload, showToast }: any) => {
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showToast('Lütfen sadece resim dosyası yükleyin', 'error');
+      return;
+    }
+
+    setUploading(true);
+    setProgress(10);
+
+    try {
+      const fileName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+      const { data, error } = await supabaseStorage.storage
+        .from('question-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabaseStorage.storage
+        .from('question-images')
+        .getPublicUrl(data.path);
+
+      onUpload(publicUrl);
+      setProgress(100);
+      showToast('Görsel başarıyla yüklendi 🎉');
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      showToast('Yükleme başarısız: ' + err.message, 'error');
+    } finally {
+      setTimeout(() => {
+        setUploading(false);
+        setProgress(0);
+      }, 1000);
+    }
+  };
+
+  return (
+    <div>
+      <div
+        className={`upload-zone ${dragging ? 'dragging' : ''}`}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          if (e.dataTransfer.files?.[0]) handleFile(e.dataTransfer.files[0]);
+        }}
+        onClick={() => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.onchange = (e: any) => {
+            if (e.target.files?.[0]) handleFile(e.target.files[0]);
+          };
+          input.click();
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', opacity: uploading ? 0.3 : 1 }}>
+          <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'hsla(var(--primary), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Plus size={32} color="hsl(var(--primary))" />
+          </div>
+          <div>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>Görseli Buraya Sürükleyin</h4>
+            <p style={{ fontSize: '0.9rem', opacity: 0.5 }}>veya bilgisayarınızdan seçmek için tıklayın</p>
+          </div>
+        </div>
+        {uploading && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.2)' }}>
+            <div style={{ width: '80%', height: '8px', background: 'hsla(var(--foreground), 0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ width: `${progress}%`, height: '100%', background: 'hsl(var(--primary))', transition: 'width 0.3s' }} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {currentImage && (
+        <div className="upload-preview animate-fade-in">
+          <img src={currentImage} alt="Preview" />
+          <button className="remove-img" onClick={(e) => { e.stopPropagation(); onUpload(''); }}>
+            <XCircle size={18} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Toast = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
   <div className="toast-container">
@@ -405,18 +504,13 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
 
                 <div className="form-block animate-fade-in" style={{ animationDelay: '0.2s' }}>
                   <div className="form-heading">
-                    <label>GÖRSEL URL (OPSİYONEL)</label>
+                    <label>SORU GÖRSELİ</label>
                   </div>
-                  <div style={{ position: 'relative' }}>
-                    <ImageIcon size={22} style={{ position: 'absolute', left: '1.5rem', top: '1.1rem', opacity: 0.5, color: 'hsl(var(--primary))' }} />
-                    <input
-                      className="input-field"
-                      style={{ paddingLeft: '4rem' }}
-                      placeholder="https://resim-linki.com/gorsel.png"
-                      value={qForm.img}
-                      onChange={e => setQForm({ ...qForm, img: e.target.value })}
-                    />
-                  </div>
+                  <FileUpload
+                    currentImage={qForm.img}
+                    onUpload={(url: string) => setQForm({ ...qForm, img: url })}
+                    showToast={showToast}
+                  />
                 </div>
 
                 <div className="form-block animate-fade-in" style={{ animationDelay: '0.3s' }}>
