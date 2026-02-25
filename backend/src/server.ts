@@ -11,7 +11,10 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // API Routes
+app.get('/api/health', (req, res) => res.json({ status: 'ok', env: process.env.NODE_ENV }));
 app.use('/api', apiRoutes);
+// Fallback for cases where Vercel might pass the path without the /api prefix or twice
+app.use('/', apiRoutes);
 
 // Export app for serverless / testing
 export default app;

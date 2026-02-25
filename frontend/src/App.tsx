@@ -42,11 +42,16 @@ export default function App() {
   const [categories, setCategories] = useState<any[]>([]);
   const [selCat, setSelCat] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchCats = () => {
+    setApiError(null);
     axios.get(`${API_BASE}/categories`)
       .then(res => setCategories(res.data))
-      .catch(err => console.error('API Error:', err));
+      .catch(err => {
+        console.error('API Error:', err);
+        setApiError(err.message + (err.response ? ': ' + JSON.stringify(err.response.data) : ''));
+      });
   };
 
   useEffect(() => {
@@ -101,6 +106,12 @@ export default function App() {
         {view === 'dash' && (
           <div>
             <h2 style={{ marginBottom: '2rem' }}>Eğitim Kategorileri</h2>
+            {apiError && (
+              <div style={{ padding: '1rem', background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', borderRadius: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+                <strong>API Hatası:</strong> {apiError}<br />
+                <small>URL: {API_BASE}/categories</small>
+              </div>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
               {categories.map((c: any) => (
                 <div key={c.id} className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => { setSelCat(c); setView('quiz'); }}>
@@ -113,7 +124,7 @@ export default function App() {
                   </div>
                 </div>
               ))}
-              {categories.length === 0 && <p style={{ color: '#94a3b8' }}>Henüz kategori eklenmemiş.</p>}
+              {categories.length === 0 && !apiError && <p style={{ color: '#94a3b8' }}>Henüz kategori eklenmemiş.</p>}
             </div>
           </div>
         )}
