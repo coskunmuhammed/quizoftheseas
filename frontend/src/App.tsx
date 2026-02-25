@@ -7,7 +7,13 @@ import {
   XCircle,
   ChevronRight,
   LogOut,
-  BookOpen
+  BookOpen,
+  Plus,
+  Trash2,
+  Edit,
+  Save,
+  ChevronLeft,
+  ImageIcon
 } from 'lucide-react';
 
 // --- Dynamic API URL ---
@@ -36,23 +42,24 @@ interface Question {
   option_d: string;
   correct_option: string;
   explanation: string;
+  image_url?: string;
 }
 
-// --- Internal Components ---
+// --- UI Components ---
 
-const Navbar = ({ user, isAdmin, onLogout }: any) => (
-  <nav className="glass-card" style={{ margin: '1rem', padding: '1rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-      <GraduationCap size={32} color="#0ea5e9" />
-      <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>DENİZ AKADEMİSİ</span>
+const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
+  <nav className="glass-card" style={{ margin: '1rem', padding: '0.75rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={onGoHome}>
+      <GraduationCap size={28} color="hsl(var(--primary))" />
+      <span style={{ fontSize: '1.1rem', fontWeight: 800, letterSpacing: '-0.02em' }}>DENİZ AKADEMİSİ</span>
     </div>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <User size={20} />
-        <span>{user} {isAdmin && '(Hoca)'}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'hsla(var(--foreground), 0.7)' }}>
+        <User size={18} />
+        <span>{user} {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.25rem' }}>Hoca</span>}</span>
       </div>
-      <button onClick={onLogout} className="btn" style={{ background: 'transparent', color: '#94a3b8', padding: 0 }}>
-        <LogOut size={20} />
+      <button onClick={onLogout} className="btn btn-ghost" style={{ padding: '0.25rem' }}>
+        <LogOut size={18} />
       </button>
     </div>
   </nav>
@@ -78,7 +85,7 @@ const QuizView = ({ category, onFinish }: any) => {
   }, [category.id]);
 
   if (loading) return <div style={{ padding: '4rem', textAlign: 'center' }}>Yükleniyor...</div>;
-  if (!questions.length) return <div style={{ padding: '4rem', textAlign: 'center' }}>Soru bulunamadı.</div>;
+  if (!questions.length) return <div className="glass-card animate-fade-in" style={{ padding: '4rem', textAlign: 'center' }}>Bu kategoride soru bulunamadı.</div>;
 
   const currentQ = questions[currentIndex];
 
@@ -98,112 +105,284 @@ const QuizView = ({ category, onFinish }: any) => {
   };
 
   return (
-    <div className="glass-card" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '1.5rem', color: '#94a3b8' }}>Soru {currentIndex + 1} / {questions.length}</div>
-      <h2 style={{ marginBottom: '2rem' }}>{currentQ.question_text}</h2>
-      <div style={{ display: 'grid', gap: '1rem' }}>
-        {['a', 'b', 'c', 'd'].map(opt => (
-          <button
-            key={opt}
-            onClick={() => setSelectedOption(opt)}
-            className="glass-card"
-            style={{
-              padding: '1rem',
-              textAlign: 'left',
-              borderColor: selectedOption === opt ? '#0ea5e9' : 'rgba(255,255,255,0.1)',
-              background: selectedOption === opt ? 'rgba(14, 165, 233, 0.1)' : 'transparent'
-            }}
-          >
-            <span style={{ fontWeight: 800, marginRight: '1rem' }}>{opt.toUpperCase()}</span>
-            {(currentQ as any)[`option_${opt}`]}
-          </button>
-        ))}
+    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="glass-card" style={{ padding: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <span className="badge badge-primary">{category.name}</span>
+          <span style={{ fontSize: '0.85rem', color: 'hsla(var(--foreground), 0.5)' }}>Soru {currentIndex + 1} / {questions.length}</span>
+        </div>
+
+        <h2 style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>{currentQ.question_text}</h2>
+
+        {currentQ.image_url && (
+          <div style={{ marginBottom: '2rem', borderRadius: '1rem', overflow: 'hidden', border: '1px solid hsla(var(--foreground), 0.1)' }}>
+            <img src={currentQ.image_url} alt="Soru Görseli" style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', display: 'block' }} />
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gap: '0.75rem' }}>
+          {['a', 'b', 'c', 'd'].map(opt => (
+            <button
+              key={opt}
+              onClick={() => setSelectedOption(opt)}
+              className={`option-btn ${selectedOption === opt ? 'selected' : ''}`}
+            >
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '50%', background: selectedOption === opt ? 'hsl(var(--primary))' : 'hsla(var(--foreground), 0.1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: selectedOption === opt ? 'white' : 'inherit'
+              }}>
+                {opt.toUpperCase()}
+              </div>
+              <span style={{ fontSize: '1.05rem' }}>{(currentQ as any)[`option_${opt}`]}</span>
+            </button>
+          ))}
+        </div>
+
+        <button
+          className="btn btn-primary"
+          style={{ width: '100%', marginTop: '2.5rem', opacity: selectedOption ? 1 : 0.5 }}
+          disabled={!selectedOption}
+          onClick={handleNext}
+        >
+          {currentIndex === questions.length - 1 ? 'Testi Bitir' : 'Sonraki Soru'}
+          <ChevronRight size={20} />
+        </button>
       </div>
-      <button
-        className="btn btn-primary"
-        style={{ width: '100%', marginTop: '2rem', opacity: selectedOption ? 1 : 0.5 }}
-        disabled={!selectedOption}
-        onClick={handleNext}
-      >
-        {currentIndex === questions.length - 1 ? 'Testi Bitir' : 'Sonraki Soru'}
-      </button>
     </div>
   );
 };
 
-const ResultsView = ({ score, total, answers, onBack }: any) => (
-  <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-    <div className="glass-card" style={{ padding: '2rem', textAlign: 'center', marginBottom: '2rem' }}>
-      <h1 style={{ fontSize: '3rem' }}>%{Math.round((score / total) * 100)}</h1>
-      <p style={{ color: '#94a3b8' }}>{total} Soruda {score} Doğru</p>
-      <button className="btn btn-primary" style={{ marginTop: '1.5rem' }} onClick={onBack}>Geri Dön</button>
-    </div>
-    <div style={{ display: 'grid', gap: '1rem' }}>
-      {answers.map((ans: any, i: number) => (
-        <div key={i} className="glass-card" style={{ padding: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-            {ans.isCorrect ? <CheckCircle color="#10b981" /> : <XCircle color="#f43f5e" />}
-            <h3>{ans.question.question_text}</h3>
+const ResultsView = ({ score, total, answers, onBack }: any) => {
+  const percentage = Math.round((score / total) * 100);
+  return (
+    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', marginBottom: '2rem', position: 'relative', overflow: 'hidden' }}>
+        <div style={{
+          position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px',
+          background: 'hsla(var(--primary), 0.1)', borderRadius: '50%', filter: 'blur(40px)'
+        }}></div>
+        <h1 style={{ fontSize: '4rem', marginBottom: '0.5rem', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          %{percentage}
+        </h1>
+        <p style={{ color: 'hsla(var(--foreground), 0.6)', fontSize: '1.1rem', marginBottom: '2rem' }}>{total} Soruda {score} Doğru</p>
+        <button className="btn btn-primary" onClick={onBack}>
+          <ChevronLeft size={20} />
+          Ana Sayfaya Dön
+        </button>
+      </div>
+      <div style={{ display: 'grid', gap: '1.25rem' }}>
+        {answers.map((ans: any, i: number) => (
+          <div key={i} className="glass-card" style={{ padding: '1.75rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+              <div style={{ marginTop: '0.25rem' }}>{ans.isCorrect ? <CheckCircle size={24} color="#10b981" /> : <XCircle size={24} color="hsl(var(--accent))" />}</div>
+              <h3 style={{ fontSize: '1.15rem' }}>{ans.question.question_text}</h3>
+            </div>
+            <div style={{ marginLeft: '2.5rem', marginBottom: '1.25rem', display: 'flex', gap: '1.5rem', fontSize: '0.95rem' }}>
+              <div>Cevabınız: <span style={{ color: ans.isCorrect ? '#10b981' : 'hsl(var(--accent))', fontWeight: 700 }}>{ans.selected.toUpperCase()}</span></div>
+              <div>Doğru: <span style={{ color: '#10b981', fontWeight: 700 }}>{ans.question.correct_option.toUpperCase()}</span></div>
+            </div>
+            <div style={{ background: 'hsla(var(--foreground), 0.05)', padding: '1.25rem', borderRadius: '1rem', marginLeft: '2.5rem', borderLeft: '4px solid hsl(var(--primary))' }}>
+              <div style={{ fontWeight: 700, marginBottom: '0.25rem', fontSize: '0.9rem', opacity: 0.6 }}>AÇIKLAMA</div>
+              <div style={{ fontSize: '0.95rem' }}>{ans.question.explanation || 'Açıklama mevcut değil.'}</div>
+            </div>
           </div>
-          <p style={{ marginLeft: '2.5rem', marginBottom: '1rem' }}>
-            Cevabınız: <span style={{ color: ans.isCorrect ? '#10b981' : '#f43f5e', fontWeight: 700 }}>{ans.selected.toUpperCase()}</span> |
-            Doğru: <span style={{ color: '#10b981', fontWeight: 700 }}>{ans.question.correct_option.toUpperCase()}</span>
-          </p>
-          <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '0.5rem', marginLeft: '2.5rem' }}>
-            <strong>Neden?</strong><br />{ans.question.explanation || 'Açıklama mevcut değil.'}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 const AdminPanel = ({ categories, fetchCategories }: any) => {
   const [newCat, setNewCat] = useState('');
-  const [selectedCat, setSelectedCat] = useState('');
-  const [q, setQ] = useState({ text: '', a: '', b: '', c: '', d: '', correct: 'a', expl: '' });
+  const [editingCatId, setEditingCatId] = useState<number | null>(null);
+  const [editingCatName, setEditingCatName] = useState('');
+
+  const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
+  const [catQuestions, setCatQuestions] = useState<Question[]>([]);
+
+  const [isEditingQ, setIsEditingQ] = useState(false);
+  const [editingQId, setEditingQId] = useState<number | null>(null);
+  const [qForm, setQForm] = useState({
+    text: '', a: '', b: '', c: '', d: '', correct: 'a', expl: '', img: ''
+  });
+
+  const fetchQs = (cid: number) => {
+    axios.get(`${API_BASE}/questions?category_id=${cid}`).then(res => setCatQuestions(res.data));
+  };
 
   const addCat = () => {
     if (!newCat) return;
     axios.post(`${API_BASE}/categories`, { name: newCat }).then(() => { setNewCat(''); fetchCategories(); });
   };
 
-  const addQ = () => {
-    if (!selectedCat || !q.text) return;
-    axios.post(`${API_BASE}/questions`, {
-      category_id: selectedCat,
-      question_text: q.text,
-      option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d,
-      correct_option: q.correct,
-      explanation: q.expl
-    }).then(() => { alert('Soru eklendi'); setQ({ text: '', a: '', b: '', c: '', d: '', correct: 'a', expl: '' }); });
+  const updateCat = (id: number) => {
+    axios.put(`${API_BASE}/categories/${id}`, { name: editingCatName }).then(() => {
+      setEditingCatId(null);
+      fetchCategories();
+    });
+  };
+
+  const deleteCat = (id: number) => {
+    if (!confirm('Bu kategoriyi ve içindeki tüm soruları silmek istediğinize emin misiniz?')) return;
+    axios.delete(`${API_BASE}/categories/${id}`).then(() => fetchCategories());
+  };
+
+  const saveQuestion = () => {
+    if (!selectedCatId || !qForm.text) return;
+    const payload = {
+      category_id: selectedCatId,
+      question_text: qForm.text,
+      option_a: qForm.a, option_b: qForm.b, option_c: qForm.c, option_d: qForm.d,
+      correct_option: qForm.correct,
+      explanation: qForm.expl,
+      image_url: qForm.img
+    };
+
+    if (isEditingQ && editingQId) {
+      axios.put(`${API_BASE}/questions/${editingQId}`, payload).then(() => {
+        alert('Soru güncellendi');
+        setIsEditingQ(false);
+        setEditingQId(null);
+        fetchQs(selectedCatId);
+        resetQForm();
+      });
+    } else {
+      axios.post(`${API_BASE}/questions`, payload).then(() => {
+        alert('Soru eklendi');
+        fetchQs(selectedCatId);
+        resetQForm();
+      });
+    }
+  };
+
+  const deleteQ = (id: number) => {
+    if (!confirm('Soru silinsin mi?')) return;
+    axios.delete(`${API_BASE}/questions/${id}`).then(() => selectedCatId && fetchQs(selectedCatId));
+  };
+
+  const startEditQ = (sq: Question) => {
+    setIsEditingQ(true);
+    setEditingQId(sq.id);
+    setQForm({
+      text: sq.question_text,
+      a: sq.option_a, b: sq.option_b, c: sq.option_c, d: sq.option_d,
+      correct: sq.correct_option,
+      expl: sq.explanation,
+      img: sq.image_url || ''
+    });
+  };
+
+  const resetQForm = () => {
+    setIsEditingQ(false);
+    setEditingQId(null);
+    setQForm({ text: '', a: '', b: '', c: '', d: '', correct: 'a', expl: '', img: '' });
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+    <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '2rem', alignItems: 'start' }}>
+
+      {/* Category Management */}
       <div className="glass-card" style={{ padding: '1.5rem' }}>
-        <h3>Kategori Ekle</h3>
-        <input className="input-field" style={{ margin: '1rem 0' }} placeholder="Adı" value={newCat} onChange={e => setNewCat(e.target.value)} />
-        <button className="btn btn-primary" style={{ width: '100%' }} onClick={addCat}>Ekle</button>
-      </div>
-      <div className="glass-card" style={{ padding: '1.5rem' }}>
-        <h3>Soru Ekle</h3>
-        <select className="input-field" style={{ margin: '1rem 0', background: '#0f172a' }} value={selectedCat} onChange={e => setSelectedCat(e.target.value)}>
-          <option value="">Kategori Seçin</option>
-          {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-        <textarea className="input-field" placeholder="Soru" value={q.text} onChange={e => setQ({ ...q, text: e.target.value })} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', margin: '1rem 0' }}>
-          <input className="input-field" placeholder="A" value={q.a} onChange={e => setQ({ ...q, a: e.target.value })} />
-          <input className="input-field" placeholder="B" value={q.b} onChange={e => setQ({ ...q, b: e.target.value })} />
-          <input className="input-field" placeholder="C" value={q.c} onChange={e => setQ({ ...q, c: e.target.value })} />
-          <input className="input-field" placeholder="D" value={q.d} onChange={e => setQ({ ...q, d: e.target.value })} />
+        <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <BookOpen size={20} color="hsl(var(--primary))" />
+          Kategoriler
+        </h3>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <input className="input-field" placeholder="Yeni Kategori" value={newCat} onChange={e => setNewCat(e.target.value)} />
+          <button className="btn btn-primary" style={{ padding: '0.75rem' }} onClick={addCat}><Plus size={20} /></button>
         </div>
-        <select className="input-field" style={{ margin: '0 0 1rem 0', background: '#0f172a' }} value={q.correct} onChange={e => setQ({ ...q, correct: e.target.value })}>
-          <option value="a">Doğru: A</option><option value="b">Doğru: B</option><option value="c">Doğru: C</option><option value="d">Doğru: D</option>
-        </select>
-        <textarea className="input-field" placeholder="Açıklama" value={q.expl} onChange={e => setQ({ ...q, expl: e.target.value })} />
-        <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={addQ}>Soru Kaydet</button>
+
+        <div style={{ display: 'grid', gap: '0.5rem' }}>
+          {categories.map((c: any) => (
+            <div key={c.id} className={`glass-card ${selectedCatId === c.id ? 'animate-fade-in' : ''}`}
+              style={{ padding: '1rem', background: selectedCatId === c.id ? 'hsla(var(--primary), 0.1)' : 'hsla(var(--foreground), 0.03)', borderColor: selectedCatId === c.id ? 'hsl(var(--primary))' : 'hsla(var(--foreground), 0.1)' }}>
+              {editingCatId === c.id ? (
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <input className="input-field" value={editingCatName} onChange={e => setEditingCatName(e.target.value)} />
+                  <button className="btn btn-primary" style={{ padding: '0.5rem' }} onClick={() => updateCat(c.id)}><Save size={18} /></button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ cursor: 'pointer', fontWeight: selectedCatId === c.id ? 700 : 500 }} onClick={() => { setSelectedCatId(c.id); fetchQs(c.id); }}>{c.name}</span>
+                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                    <button className="btn btn-ghost" style={{ padding: '0.25rem' }} onClick={() => { setEditingCatId(c.id); setEditingCatName(c.name); }}><Edit size={16} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '0.25rem', color: 'hsl(var(--accent))' }} onClick={() => deleteCat(c.id)}><Trash2 size={16} /></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Question Management */}
+      <div style={{ display: 'grid', gap: '2rem' }}>
+
+        {/* Question Form */}
+        {selectedCatId && (
+          <div className="glass-card" style={{ padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1.5rem' }}>{isEditingQ ? 'Soruyu Düzenle' : 'Yeni Soru Ekle'}</h3>
+
+            <textarea className="input-field" style={{ minHeight: '100px', marginBottom: '1rem' }} placeholder="Soru Metni" value={qForm.text} onChange={e => setQForm({ ...qForm, text: e.target.value })} />
+
+            <div style={{ marginBottom: '1rem', position: 'relative' }}>
+              <ImageIcon size={18} style={{ position: 'absolute', left: '1rem', top: '1rem', opacity: 0.5 }} />
+              <input className="input-field" style={{ paddingLeft: '3rem' }} placeholder="Görsel URL (Opsiyonel)" value={qForm.img} onChange={e => setQForm({ ...qForm, img: e.target.value })} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              {['a', 'b', 'c', 'd'].map(opt => (
+                <input key={opt} className="input-field" placeholder={`Seçenek ${opt.toUpperCase()}`} value={(qForm as any)[opt]} onChange={e => setQForm({ ...qForm, [opt]: e.target.value })} />
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+              <select className="input-field" value={qForm.correct} onChange={e => setQForm({ ...qForm, correct: e.target.value })}>
+                <option value="a">Doğru: A</option><option value="b">Doğru: B</option><option value="c">Doğru: C</option><option value="d">Doğru: D</option>
+              </select>
+              <input className="input-field" placeholder="Kısa Açıklama" value={qForm.expl} onChange={e => setQForm({ ...qForm, expl: e.target.value })} />
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={saveQuestion}>{isEditingQ ? 'Güncelle' : 'Soru Kaydet'}</button>
+              {isEditingQ && <button className="btn btn-ghost" onClick={resetQForm}>İptal</button>}
+            </div>
+          </div>
+        )}
+
+        {/* Question List */}
+        {selectedCatId && (
+          <div className="glass-card" style={{ padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1.5rem' }}>Ekli Sorular</h3>
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              {catQuestions.map(sq => (
+                <div key={sq.id} className="glass-card" style={{ padding: '1.25rem', background: 'hsla(var(--foreground), 0.02)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                    <div>
+                      <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{sq.question_text}</p>
+                      <div style={{ fontSize: '0.85rem', color: 'hsla(var(--foreground), 0.6)' }}>
+                        Doğru: {sq.correct_option.toUpperCase()} | {sq.explanation ? 'Açıklama var' : 'Açıklama yok'}
+                        {sq.image_url && ' | Görsel var'}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.25rem' }}>
+                      <button className="btn btn-ghost" style={{ padding: '0.4rem' }} onClick={() => startEditQ(sq)}><Edit size={16} /></button>
+                      <button className="btn btn-ghost" style={{ padding: '0.4rem', color: 'hsl(var(--accent))' }} onClick={() => deleteQ(sq.id)}><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {catQuestions.length === 0 && <p style={{ textAlign: 'center', opacity: 0.5, padding: '2rem' }}>Henüz soru eklenmemiş.</p>}
+            </div>
+          </div>
+        )}
+
+        {!selectedCatId && (
+          <div className="glass-card animate-fade-in" style={{ padding: '4rem', textAlign: 'center', opacity: 0.6 }}>
+            Soru yönetimi için soldan bir kategori seçin.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -227,12 +406,18 @@ export default function App() {
       .then(res => setCategories(res.data))
       .catch(err => {
         console.error('Fetch error:', err);
-        setApiError(err.message + (err.response ? ': ' + JSON.stringify(err.response.data) : ''));
+        setApiError(err.message);
       });
   };
 
   useEffect(() => {
-    if (user) fetchCats();
+    if (user) {
+      if (user === 'Hoca') {
+        setIsAdmin(true);
+        setView('admin');
+      }
+      fetchCats();
+    }
   }, [user]);
 
   const onLogout = () => {
@@ -258,14 +443,17 @@ export default function App() {
 
   if (!user) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="glass-card" style={{ padding: '3rem', width: '400px', textAlign: 'center' }}>
-          <GraduationCap size={64} color="#0ea5e9" style={{ marginBottom: '1rem' }} />
-          <h1>Deniz Akademisi</h1>
-          <p style={{ color: '#94a3b8', margin: '1rem 0 2rem 0' }}>Soru Bankasına Giriş Yapın</p>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+        <div className="glass-card animate-fade-in" style={{ padding: '3.5rem', width: '100%', maxWidth: '450px', textAlign: 'center' }}>
+          <div style={{ position: 'relative', display: 'inline-block', marginBottom: '2rem' }}>
+            <div style={{ position: 'absolute', inset: '-20px', background: 'hsla(var(--primary), 0.2)', filter: 'blur(20px)', borderRadius: '50%' }}></div>
+            <GraduationCap size={72} color="hsl(var(--primary))" style={{ position: 'relative' }} />
+          </div>
+          <h1 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>Deniz Akademisi</h1>
+          <p style={{ color: 'hsla(var(--foreground), 0.5)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>Eğitim ve Soru Bankası Platformu</p>
           <form onSubmit={onLogin}>
-            <input className="input-field" placeholder="Ad Soyad" value={loginVal} onChange={e => setLoginVal(e.target.value)} />
-            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>Giriş Yap</button>
+            <input className="input-field" style={{ marginBottom: '1rem' }} placeholder="Ad Soyad" value={loginVal} onChange={e => setLoginVal(e.target.value)} />
+            <button className="btn btn-primary" style={{ width: '100%' }}>Giriş Yap</button>
           </form>
         </div>
       </div>
@@ -273,32 +461,33 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      <Navbar user={user} isAdmin={isAdmin} onLogout={onLogout} />
+    <div style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+      <Navbar user={user} isAdmin={isAdmin} onLogout={onLogout} onGoHome={() => setView(isAdmin ? 'admin' : 'dash')} />
       <main className="container">
         {view === 'dash' && (
-          <div>
-            <h2 style={{ marginBottom: '2rem' }}>Eğitim Kategorileri</h2>
+          <div className="animate-fade-in">
+            <h2 style={{ marginBottom: '2.5rem', fontSize: '1.75rem' }}>Eğitim Kategorileri</h2>
             {apiError && (
-              <div style={{ padding: '1rem', background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', borderRadius: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-                <strong>Bağlantı Hatası:</strong> {apiError}<br />
-                <small>Hedef: {API_BASE}/categories</small>
+              <div style={{ padding: '1.25rem', background: 'hsla(var(--accent), 0.1)', color: 'hsl(var(--accent))', borderRadius: '1rem', marginBottom: '2rem', border: '1px solid hsla(var(--accent), 0.2)' }}>
+                <strong>Bağlantı Hatası:</strong> {apiError}
               </div>
             )}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
               {categories.map(c => (
-                <div key={c.id} className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer' }}
+                <div key={c.id} className="glass-card animate-fade-in" style={{ padding: '1.75rem', cursor: 'pointer', transition: 'all 0.3s' }}
                   onClick={() => { setSelCat(c); setView('quiz'); }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <BookOpen color="#0ea5e9" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'hsla(var(--primary), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <BookOpen color="hsl(var(--primary))" />
+                      </div>
                       <h3 style={{ fontSize: '1.25rem' }}>{c.name}</h3>
                     </div>
-                    <ChevronRight color="#94a3b8" />
+                    <ChevronRight color="hsla(var(--foreground), 0.3)" />
                   </div>
                 </div>
               ))}
-              {categories.length === 0 && !apiError && <p style={{ color: '#94a3b8' }}>Henüz kategori eklenmemiş.</p>}
+              {categories.length === 0 && !apiError && <div className="glass-card" style={{ padding: '3rem', gridColumn: '1 / -1', textAlign: 'center', opacity: 0.5 }}>Henüz kategori eklenmemiş.</div>}
             </div>
           </div>
         )}
