@@ -181,29 +181,83 @@ select.input-field {
 /* Dash Layout & Responsiveness */
 .dash-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 2.5rem;
+  grid-template-columns: 360px 1fr;
+  gap: 3.5rem;
   align-items: start;
 }
 
-.form-section {
-  padding: 2.5rem;
-  border-radius: 1.5rem;
-  background: hsla(var(--foreground), 0.03);
-  border: 1px dashed hsla(var(--foreground), 0.1);
-  transition: all 0.3s ease;
+.form-block {
+  background: linear-gradient(165deg, hsla(var(--card), 0.7), hsla(var(--card), 0.3));
+  border: 1px solid hsla(var(--foreground), 0.08);
+  border-radius: 2.5rem;
+  padding: 3rem;
+  margin-bottom: 3.5rem;
+  box-shadow:
+    0 15px 45px -10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px hsla(var(--foreground), 0.05);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.form-section:focus-within {
-  background: hsla(var(--foreground), 0.05);
-  border-style: solid;
+.form-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  opacity: 0.8;
+}
+
+.form-block:hover {
+  transform: translateY(-8px) scale(1.01);
   border-color: hsla(var(--primary), 0.4);
+  background: linear-gradient(165deg, hsla(var(--card), 0.9), hsla(var(--card), 0.5));
+  box-shadow:
+    0 40px 80px -25px rgba(0, 0, 0, 0.7),
+    0 0 30px -10px hsla(var(--primary), 0.3);
 }
 
-@media (max-width: 1024px) {
+.form-block:hover::before {
+  transform: translateX(100%);
+}
+
+.form-block:focus-within {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 1px hsl(var(--primary)), 0 25px 50px -15px rgba(0, 0, 0, 0.6);
+}
+
+.form-heading {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.form-heading label {
+  font-size: 0.9rem !important;
+  font-weight: 900 !important;
+  color: hsl(var(--primary)) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.25em !important;
+  white-space: nowrap;
+}
+
+.form-heading::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, hsla(var(--foreground), 0.15), transparent);
+}
+
+@media (max-width: 1200px) {
   .dash-layout {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 2.5rem;
   }
 }
 
@@ -216,8 +270,13 @@ select.input-field {
     padding: 1.5rem !important;
   }
 
+  .form-block {
+    padding: 2.5rem 1.75rem;
+    border-radius: 2rem;
+  }
+
   .btn {
-    padding: 0.875rem 1.25rem;
+    padding: 1.125rem;
     width: 100% !important;
   }
 }
