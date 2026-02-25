@@ -684,7 +684,7 @@ export default function App() {
   const onLogin = (e: any) => {
     e.preventDefault();
     if (!loginVal.trim()) return;
-    if (loginVal === 'admin_quiz') {
+    if (loginVal === 'admin_deniz') {
       setIsAdmin(true);
       setUser('Hoca');
       setView('admin');
@@ -697,7 +697,10 @@ export default function App() {
 
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#f8fafc' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#f8fafc' }}>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#1e293b', marginBottom: '2rem', letterSpacing: '-0.03em', textAlign: 'center' }}>
+          Quiz of the <span style={{ color: 'hsl(var(--primary))' }}>Seas</span>
+        </h2>
         <div className="login-card-white animate-fade-in">
           <h1 className="login-header-text">Giriş Yap</h1>
           <p className="login-subtitle">Hesabınıza giriş yaparak devam edin.</p>
