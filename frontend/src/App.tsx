@@ -7,8 +7,7 @@ import {
   XCircle,
   ChevronRight,
   LogOut,
-  BookOpen,
-  PieChart
+  BookOpen
 } from 'lucide-react';
 
 // --- Dynamic API URL ---
