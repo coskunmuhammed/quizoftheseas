@@ -1,0 +1,17 @@
+{
+    "name": "quizofthesea-root",
+    "version": "1.0.0",
+    "private": true,
+    "dependencies": {
+        "express": "^5.2.1",
+        "cors": "^2.8.6",
+        "body-parser": "^2.2.2",
+        "@supabase/supabase-js": "^2.97.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3",
+        "@types/express": "^5.0.6",
+        "@types/cors": "^2.8.19",
+        "@types/node": "^22.13.5"
+    }
+}
