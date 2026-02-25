@@ -22,6 +22,3 @@ if (process.env.NODE_ENV !== 'production') {
         console.log(`Backend is running on http://localhost:${PORT}`);
     });
 }
-startServer().catch(err => {
-    console.error('Failed to start server:', err);
-});
