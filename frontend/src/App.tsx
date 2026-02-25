@@ -280,13 +280,13 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
         setEditingQId(null);
         fetchQs(selectedCatId);
         resetQForm();
-      }).catch(err => showToast('Soru güncellenirken hata oluştu', 'error'));
+      }).catch(() => showToast('Soru güncellenirken hata oluştu', 'error'));
     } else {
       axios.post(`${API_BASE}/questions`, payload).then(() => {
         showToast('İşlem başarılı! Yeni soru eklendi 🎉');
         fetchQs(selectedCatId);
         resetQForm();
-      }).catch(err => showToast('Soru kaydedilirken hata oluştu', 'error'));
+      }).catch(() => showToast('Soru kaydedilirken hata oluştu', 'error'));
     }
   };
 
