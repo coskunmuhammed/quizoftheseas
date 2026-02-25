@@ -27,8 +27,15 @@ router.put('/categories/:id', async (req, res) => {
 
 router.delete('/categories/:id', async (req, res) => {
     const { id } = req.params;
+
+    // First delete all questions in this category to avoid foreign key issues
+    const { error: qError } = await supabase.from('questions').delete().eq('category_id', id);
+    if (qError) return res.status(500).json(qError);
+
+    // Then delete the category
     const { error } = await supabase.from('categories').delete().eq('id', id);
     if (error) return res.status(500).json(error);
+
     res.status(204).send();
 });
 

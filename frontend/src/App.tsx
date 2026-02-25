@@ -181,14 +181,32 @@ const FileUpload = ({ currentImage, onUpload, showToast }: any) => {
   );
 };
 
-const Toast = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
-  <div className="toast-container">
-    <div className={`toast ${type}`}>
-      {type === 'success' ? <CheckCircle size={24} color="hsl(var(--primary))" /> : <XCircle size={24} color="hsl(var(--accent))" />}
-      <span style={{ fontWeight: 600, letterSpacing: '0.01em' }}>{message}</span>
+const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel }: any) => {
+  if (!isOpen) return null;
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 10000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)'
+    }} onClick={onCancel}>
+      <div className="glass-card animate-fade-in" style={{
+        width: '90%', maxWidth: '400px', padding: '2.5rem', textAlign: 'center',
+        border: '1px solid hsla(var(--primary), 0.3)',
+        boxShadow: '0 0 50px hsla(var(--primary), 0.2)'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'hsla(var(--accent), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+          <Trash2 size={32} color="hsl(var(--accent))" />
+        </div>
+        <h3 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'white' }}>{title}</h3>
+        <p style={{ color: 'hsla(var(--foreground), 0.7)', marginBottom: '2.5rem', lineHeight: '1.6' }}>{message}</p>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onCancel}>Vazgeç</button>
+          <button className="btn btn-primary" style={{ flex: 1, background: 'hsl(var(--accent))', boxShadow: '0 8px 25px -5px hsla(var(--accent), 0.4)' }} onClick={onConfirm}>Evet, Sil</button>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const QuizView = ({ category, onFinish }: any) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -331,6 +349,20 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
     text: '', a: '', b: '', c: '', d: '', correct: 'a', expl: '', img: ''
   });
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    type: 'cat' | 'q';
+    id: number | null;
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'cat',
+    id: null,
+    title: '',
+    message: ''
+  });
+
   const fetchQs = (cid: number) => {
     axios.get(`${API_BASE}/questions?category_id=${cid}`).then(res => setCatQuestions(res.data));
   };
@@ -360,8 +392,40 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
   };
 
   const deleteCat = (id: number) => {
-    if (!confirm('Bu kategoriyi ve içindeki tüm soruları silmek istediğinize emin misiniz?')) return;
-    axios.delete(`${API_BASE}/categories/${id}`).then(() => fetchCategories());
+    setConfirmModal({
+      isOpen: true,
+      type: 'cat',
+      id,
+      title: 'Kategoriyi Sil',
+      message: 'Bu kategoriyi ve içindeki tüm soruları silmek istediğinize emin misiniz? Bu işlem geri alınamaz.'
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    const { id, type } = confirmModal;
+    if (!id) return;
+
+    if (type === 'cat') {
+      axios.delete(`${API_BASE}/categories/${id}`)
+        .then(() => {
+          fetchCategories();
+          if (selectedCatId === id) {
+            setSelectedCatId(null);
+            setCatQuestions([]);
+          }
+          showToast('Kategori ve tüm soruları silindi');
+        })
+        .catch(err => showToast('Silme hatası: ' + err.message, 'error'))
+        .finally(() => setConfirmModal({ ...confirmModal, isOpen: false }));
+    } else {
+      axios.delete(`${API_BASE}/questions/${id}`)
+        .then(() => {
+          if (selectedCatId) fetchQs(selectedCatId);
+          showToast('Soru silindi');
+        })
+        .catch(err => showToast('Soru silinirken hata oluştu', 'error'))
+        .finally(() => setConfirmModal({ ...confirmModal, isOpen: false }));
+    }
   };
 
   const saveQuestion = () => {
@@ -393,8 +457,13 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
   };
 
   const deleteQ = (id: number) => {
-    if (!confirm('Soru silinsin mi?')) return;
-    axios.delete(`${API_BASE}/questions/${id}`).then(() => selectedCatId && fetchQs(selectedCatId));
+    setConfirmModal({
+      isOpen: true,
+      type: 'q',
+      id,
+      title: 'Soruyu Sil',
+      message: 'Bu soruyu kalıcı olarak silmek istediğinize emin misiniz?'
+    });
   };
 
   const startEditQ = (sq: Question) => {
@@ -635,6 +704,14 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+      />
     </div>
   );
 };
@@ -792,3 +869,12 @@ export default function App() {
     </div>
   );
 }
+
+const Toast = ({ message, type }: { message: string; type: 'success' | 'error' }) => (
+  <div className="toast-container">
+    <div className={`toast ${type}`}>
+      {type === 'success' ? <CheckCircle size={24} color="hsl(var(--primary))" /> : <XCircle size={24} color="hsl(var(--accent))" />}
+      <span style={{ fontWeight: 600, letterSpacing: '0.01em' }}>{message}</span>
+    </div>
+  </div>
+);
