@@ -208,6 +208,21 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
   const [nc, setNc] = useState('');
   const [sc, setSc] = useState('');
   const [q, setQ] = useState({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
+  const [qs, setQs] = useState<any[]>([]);
+  const [editingQId, setEditingQId] = useState<any>(null);
+
+  const fetchQs = (catId: any) => {
+    if (!catId) { setQs([]); return; }
+    axios.get(`${API_BASE}/questions?category_id=${catId}`)
+      .then(res => setQs(res.data))
+      .catch(err => console.error('Qs Error:', err));
+  };
+
+  useEffect(() => {
+    fetchQs(sc);
+    setEditingQId(null);
+    setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
+  }, [sc]);
 
   const delCat = (id: any, name: string) => {
     if (confirm(`'${name}' kategorisini ve içindeki tüm soruları silmek istediğinize emin misiniz?`)) {
@@ -219,6 +234,49 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
     const newName = prompt('Yeni kategori adı:', oldName);
     if (newName && newName !== oldName) {
       axios.put(`${API_BASE}/categories/${id}`, { name: newName }).then(() => fetchCategories());
+    }
+  };
+
+  const delQ = (id: any) => {
+    if (confirm('Bu soruyu silmek istediğinize emin misiniz?')) {
+      axios.delete(`${API_BASE}/questions/${id}`).then(() => fetchQs(sc));
+    }
+  };
+
+  const startEditQ = (orig: any) => {
+    setEditingQId(orig.id);
+    setQ({
+      t: orig.question_text,
+      a: orig.option_a,
+      b: orig.option_b,
+      c: orig.option_c,
+      d: orig.option_d,
+      k: orig.correct_option,
+      e: orig.explanation || ''
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const saveQ = () => {
+    if (!sc || !q.t.trim() || !q.a.trim() || !q.b.trim() || !q.c.trim() || !q.d.trim()) {
+      alert('Lütfen tüm gerekli alanları doldurun.');
+      return;
+    }
+    const payload = { category_id: sc, question_text: q.t, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.k, explanation: q.e };
+
+    if (editingQId) {
+      axios.put(`${API_BASE}/questions/${editingQId}`, payload).then(() => {
+        alert('Soru Güncellendi');
+        setEditingQId(null);
+        setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
+        fetchQs(sc);
+      });
+    } else {
+      axios.post(`${API_BASE}/questions`, payload).then(() => {
+        alert('Soru Kaydedildi');
+        setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
+        fetchQs(sc);
+      });
     }
   };
 
@@ -245,10 +303,28 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
               ))}
             </div>
           </div>
+
+          {sc && (
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              <h3>Soruları Düzenle ({qs.length})</h3>
+              <div style={{ maxHeight: '500px', overflowY: 'auto', display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+                {qs.map((item: any) => (
+                  <div key={item.id} style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.5rem', border: item.id === editingQId ? '1px solid #0ea5e9' : 'none' }}>
+                    <p style={{ fontSize: '0.9rem', marginBottom: '0.75rem', fontWeight: 600 }}>{item.question_text}</p>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => startEditQ(item)} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', background: '#0ea5e9', color: 'white' }}>Düzenle</button>
+                      <button onClick={() => delQ(item.id)} className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', background: '#f43f5e', color: 'white' }}>Sil</button>
+                    </div>
+                  </div>
+                ))}
+                {qs.length === 0 && <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>Bu kategoride soru bulunamadı.</p>}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="glass-card" style={{ padding: '1.5rem' }}>
-          <h3>Soru Ekle</h3>
+          <h3>{editingQId ? 'Soruyu Güncelle' : 'Soru Ekle'}</h3>
           <select className="input-field" style={{ margin: '1rem 0', background: '#0f172a' }} value={sc} onChange={e => setSc(e.target.value)}>
             <option value="">Kategori Seçin</option>
             {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -264,13 +340,14 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
             <option value="a">Cevap: A</option><option value="b">Cevap: B</option><option value="c">Cevap: C</option><option value="d">Cevap: D</option>
           </select>
           <textarea className="input-field" placeholder="Neden? / Açıklama" value={q.e} onChange={e => setQ({ ...q, e: e.target.value })} />
-          <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} onClick={() => {
-            if (!sc || !q.t.trim() || !q.a.trim() || !q.b.trim() || !q.c.trim() || !q.d.trim()) {
-              alert('Lütfen tüm gerekli alanları doldurun.');
-              return;
-            }
-            axios.post(`${API_BASE}/questions`, { category_id: sc, question_text: q.t, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.k, explanation: q.e }).then(() => { alert('Soru Kaydedildi'); setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' }); });
-          }}>Soru Kaydet</button>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={saveQ}>
+              {editingQId ? 'Güncelle' : 'Soru Kaydet'}
+            </button>
+            {editingQId && (
+              <button className="btn" style={{ background: 'rgba(255,255,255,0.1)', color: 'white' }} onClick={() => { setEditingQId(null); setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' }); }}>İptal</button>
+            )}
+          </div>
         </div>
       </div>
     </div>
