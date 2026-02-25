@@ -321,27 +321,42 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
 
         {/* Question Form */}
         {selectedCatId && (
-          <div className="glass-card" style={{ padding: '2rem' }}>
+          <div className="glass-card animate-fade-in" style={{ padding: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem' }}>{isEditingQ ? 'Soruyu Düzenle' : 'Yeni Soru Ekle'}</h3>
 
-            <textarea className="input-field" style={{ minHeight: '100px', marginBottom: '1rem' }} placeholder="Soru Metni" value={qForm.text} onChange={e => setQForm({ ...qForm, text: e.target.value })} />
-
-            <div style={{ marginBottom: '1rem', position: 'relative' }}>
-              <ImageIcon size={18} style={{ position: 'absolute', left: '1rem', top: '1rem', opacity: 0.5 }} />
-              <input className="input-field" style={{ paddingLeft: '3rem' }} placeholder="Görsel URL (Opsiyonel)" value={qForm.img} onChange={e => setQForm({ ...qForm, img: e.target.value })} />
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsla(var(--foreground), 0.5)', marginBottom: '0.5rem' }}>SORU METNİ</label>
+              <textarea className="input-field" style={{ minHeight: '100px' }} placeholder="Soruyu buraya yazın..." value={qForm.text} onChange={e => setQForm({ ...qForm, text: e.target.value })} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-              {['a', 'b', 'c', 'd'].map(opt => (
-                <input key={opt} className="input-field" placeholder={`Seçenek ${opt.toUpperCase()}`} value={(qForm as any)[opt]} onChange={e => setQForm({ ...qForm, [opt]: e.target.value })} />
-              ))}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsla(var(--foreground), 0.5)', marginBottom: '0.5rem' }}>GÖRSEL URL (OPSİYONEL)</label>
+              <div style={{ position: 'relative' }}>
+                <ImageIcon size={18} style={{ position: 'absolute', left: '1rem', top: '1rem', opacity: 0.5 }} />
+                <input className="input-field" style={{ paddingLeft: '3rem' }} placeholder="https://example.com/image.png" value={qForm.img} onChange={e => setQForm({ ...qForm, img: e.target.value })} />
+              </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
-              <select className="input-field" value={qForm.correct} onChange={e => setQForm({ ...qForm, correct: e.target.value })}>
-                <option value="a">Doğru: A</option><option value="b">Doğru: B</option><option value="c">Doğru: C</option><option value="d">Doğru: D</option>
-              </select>
-              <input className="input-field" placeholder="Kısa Açıklama" value={qForm.expl} onChange={e => setQForm({ ...qForm, expl: e.target.value })} />
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsla(var(--foreground), 0.5)', marginBottom: '0.5rem' }}>SEÇENEKLER</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                {['a', 'b', 'c', 'd'].map(opt => (
+                  <input key={opt} className="input-field" placeholder={`Seçenek ${opt.toUpperCase()}`} value={(qForm as any)[opt]} onChange={e => setQForm({ ...qForm, [opt]: e.target.value })} />
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsla(var(--foreground), 0.5)', marginBottom: '0.5rem' }}>DOĞRU CEVAP</label>
+                <select className="input-field" value={qForm.correct} onChange={e => setQForm({ ...qForm, correct: e.target.value })}>
+                  <option value="a">A Seçeneği</option><option value="b">B Seçeneği</option><option value="c">C Seçeneği</option><option value="d">D Seçeneği</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'hsla(var(--foreground), 0.5)', marginBottom: '0.5rem' }}>AÇIKLAMA (OPSİYONEL)</label>
+                <input className="input-field" placeholder="Çözüm veya bilgilendirme..." value={qForm.expl} onChange={e => setQForm({ ...qForm, expl: e.target.value })} />
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '1rem' }}>
