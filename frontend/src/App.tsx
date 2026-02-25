@@ -225,15 +225,25 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
   };
 
   const addCat = () => {
-    if (!newCat) return;
-    axios.post(`${API_BASE}/categories`, { name: newCat }).then(() => { setNewCat(''); fetchCategories(); });
+    if (!newCat.trim()) return;
+    axios.post(`${API_BASE}/categories`, { name: newCat })
+      .then(() => {
+        setNewCat('');
+        fetchCategories();
+      })
+      .catch(err => {
+        console.error('Category error:', err);
+        alert('Kategori eklenemedi: ' + (err.response?.data?.message || err.message));
+      });
   };
 
   const updateCat = (id: number) => {
-    axios.put(`${API_BASE}/categories/${id}`, { name: editingCatName }).then(() => {
+    const name = editingCatName.trim();
+    if (!name) return;
+    axios.put(`${API_BASE}/categories/${id}`, { name }).then(() => {
       setEditingCatId(null);
       fetchCategories();
-    });
+    }).catch(err => alert('Güncelleme hatası: ' + err.message));
   };
 
   const deleteCat = (id: number) => {
@@ -304,14 +314,14 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
             Kategoriler
           </h3>
 
-          <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-            <input className="input-field" style={{ paddingRight: '3.5rem' }} placeholder="Yeni Kategori..." value={newCat} onChange={e => setNewCat(e.target.value)} />
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <input className="input-field" placeholder="Yeni Kategori..." value={newCat} onChange={e => setNewCat(e.target.value)} />
             <button
               className="btn btn-primary"
-              style={{ position: 'absolute', right: '6px', top: '6px', bottom: '6px', width: '38px', padding: 0, borderRadius: '0.75rem' }}
+              style={{ width: '52px', height: '52px', padding: 0, borderRadius: '14px', flexShrink: 0 }}
               onClick={addCat}
             >
-              <Plus size={20} />
+              <Plus size={24} />
             </button>
           </div>
 
