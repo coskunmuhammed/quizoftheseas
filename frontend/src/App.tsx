@@ -294,10 +294,10 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 1fr) 2.5fr', gap: '2.5rem', alignItems: 'start' }}>
+    <div className="animate-fade-in dash-layout">
 
       {/* Sidebar: Categories */}
-      <aside style={{ position: 'sticky', top: '2rem' }}>
+      <aside className="dash-sidebar" style={{ position: 'sticky', top: '2rem' }}>
         <div className="glass-card shadow-lg" style={{ padding: '1.75rem' }}>
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem' }}>
             <BookOpen size={22} color="hsl(var(--primary))" />
@@ -348,7 +348,7 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
       </aside>
 
       {/* Main Content Area */}
-      <div style={{ display: 'grid', gap: '2rem' }}>
+      <div style={{ display: 'grid', gap: '2.5rem' }}>
 
         {selectedCatId ? (
           <>
@@ -359,23 +359,23 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
                 {isEditingQ && <button className="badge badge-primary cursor-pointer" onClick={resetQForm}>YENİ SORU EKLEME MODU</button>}
               </div>
 
-              <div style={{ display: 'grid', gap: '2rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>SORU METNİ</label>
+              <div style={{ display: 'grid', gap: '2.5rem' }}>
+                <div className="form-section">
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '1rem', letterSpacing: '0.1em' }}>SORU METNİ</label>
                   <textarea className="input-field" style={{ minHeight: '120px' }} placeholder="Soruyu buraya detaylıca yazın..." value={qForm.text} onChange={e => setQForm({ ...qForm, text: e.target.value })} />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>GÖRSEL URL (OPSİYONEL)</label>
+                <div className="form-section">
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '1rem', letterSpacing: '0.1em' }}>GÖRSEL URL (OPSİYONEL)</label>
                   <div style={{ position: 'relative' }}>
                     <ImageIcon size={20} style={{ position: 'absolute', left: '1.25rem', top: '1.1rem', opacity: 0.4 }} />
                     <input className="input-field" style={{ paddingLeft: '3.5rem' }} placeholder="https://resim-linki.com/gorsel.png" value={qForm.img} onChange={e => setQForm({ ...qForm, img: e.target.value })} />
                   </div>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '1rem', letterSpacing: '0.1em' }}>SEÇENEKLER</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+                <div className="form-section">
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '1.25rem', letterSpacing: '0.1em' }}>SEÇENEKLER</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     {['a', 'b', 'c', 'd'].map(opt => (
                       <div key={opt} style={{ position: 'relative' }}>
                         <div style={{ position: 'absolute', left: '1.25rem', top: '1.1rem', fontWeight: 900, fontSize: '1.1rem', color: 'hsl(var(--primary))', opacity: 0.5 }}>{opt.toUpperCase()}</div>
@@ -385,25 +385,27 @@ const AdminPanel = ({ categories, fetchCategories }: any) => {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>DOĞRU CEVAP</label>
-                    <select className="input-field" value={qForm.correct} onChange={e => setQForm({ ...qForm, correct: e.target.value })}>
-                      <option value="a">A Seçeneği</option><option value="b">B Seçeneği</option><option value="c">C Seçeneği</option><option value="d">D Seçeneği</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>AÇIKLAMA / ÇÖZÜM</label>
-                    <input className="input-field" placeholder="Doğru cevabın nedenini açıklayın (Opsiyonel)" value={qForm.expl} onChange={e => setQForm({ ...qForm, expl: e.target.value })} />
+                <div className="form-section">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>DOĞRU CEVAP</label>
+                      <select className="input-field" value={qForm.correct} onChange={e => setQForm({ ...qForm, correct: e.target.value })}>
+                        <option value="a">A Seçeneği</option><option value="b">B Seçeneği</option><option value="c">C Seçeneği</option><option value="d">D Seçeneği</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: 'hsla(var(--foreground), 0.4)', marginBottom: '0.75rem', letterSpacing: '0.1em' }}>AÇIKLAMA / ÇÖZÜM</label>
+                      <input className="input-field" placeholder="Doğru cevabın nedenini açıklayın (Opsiyonel)" value={qForm.expl} onChange={e => setQForm({ ...qForm, expl: e.target.value })} />
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <button className="btn btn-primary" style={{ flex: 1 }} onClick={saveQuestion}>
                     <Save size={20} />
                     {isEditingQ ? 'Soruyu Güncelle' : 'Soruyu Kaydet'}
                   </button>
-                  {isEditingQ && <button className="btn btn-ghost" onClick={resetQForm}>İptal</button>}
+                  {isEditingQ && <button className="btn btn-ghost" onClick={resetQForm} style={{ flex: 0.3 }}>İptal</button>}
                 </div>
               </div>
             </div>
