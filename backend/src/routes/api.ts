@@ -17,6 +17,21 @@ router.post('/categories', async (req, res) => {
     res.status(201).json(data[0]);
 });
 
+router.put('/categories/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    const { data, error } = await supabase.from('categories').update({ name }).eq('id', id).select();
+    if (error) return res.status(500).json(error);
+    res.json(data[0]);
+});
+
+router.delete('/categories/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) return res.status(500).json(error);
+    res.status(204).send();
+});
+
 // Questions
 router.get('/questions', async (req, res) => {
     const { category_id } = req.query;

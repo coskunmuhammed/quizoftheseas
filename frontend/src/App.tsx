@@ -20,7 +20,7 @@ const Navbar = ({ user, onLogout }: any) => (
   <nav className="glass-card" style={{ margin: '0.5rem', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <GraduationCap size={24} color="#0ea5e9" />
-      <span style={{ fontSize: '1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>DENİZ AKADEMİSİ</span>
+      <span style={{ fontSize: '1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>QUIZ OF THE SEAS</span>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem' }}>
       <span style={{ display: 'inline-block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user}</span>
@@ -73,7 +73,7 @@ export default function App() {
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', padding: '1rem' }}>
         <div className="glass-card" style={{ padding: '2rem', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
           <GraduationCap size={48} color="#0ea5e9" style={{ marginBottom: '1rem' }} />
-          <h1>Deniz Akademisi</h1>
+          <h1>Quiz of the Seas</h1>
           <p style={{ color: '#94a3b8', margin: '0.5rem 0 1.5rem 0' }}>Soru Bankasına Giriş Yapın</p>
           <form onSubmit={onLogin}>
             <input
@@ -209,14 +209,41 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
   const [sc, setSc] = useState('');
   const [q, setQ] = useState({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
 
+  const delCat = (id: any, name: string) => {
+    if (confirm(`'${name}' kategorisini ve içindeki tüm soruları silmek istediğinize emin misiniz?`)) {
+      axios.delete(`${API_BASE}/categories/${id}`).then(() => fetchCategories());
+    }
+  };
+
+  const editCat = (id: any, oldName: string) => {
+    const newName = prompt('Yeni kategori adı:', oldName);
+    if (newName && newName !== oldName) {
+      axios.put(`${API_BASE}/categories/${id}`, { name: newName }).then(() => fetchCategories());
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 900 ? '1fr 1fr' : '1fr', gap: '2rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3>Kategori Ekle</h3>
-            <input className="input-field" style={{ margin: '1rem 0' }} placeholder="Kategori Adı" value={nc} onChange={e => setNc(e.target.value)} />
-            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => axios.post(`${API_BASE}/categories`, { name: nc }).then(() => { setNc(''); fetchCategories(); })}>Ekle</button>
+            <h3>Kategorileri Yönet</h3>
+            <div style={{ display: 'flex', gap: '0.5rem', margin: '1rem 0' }}>
+              <input className="input-field" style={{ flex: 1 }} placeholder="Yeni Kategori" value={nc} onChange={e => setNc(e.target.value)} />
+              <button className="btn btn-primary" onClick={() => axios.post(`${API_BASE}/categories`, { name: nc }).then(() => { setNc(''); fetchCategories(); })}>Ekle</button>
+            </div>
+
+            <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'grid', gap: '0.5rem' }}>
+              {categories.map((c: any) => (
+                <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '0.5rem' }}>
+                  <span>{c.name}</span>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => editCat(c.id, c.name)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'rgba(14, 165, 233, 0.1)', color: '#0ea5e9', border: '1px solid #0ea5e9', borderRadius: '4px', cursor: 'pointer' }}>Düzelt</button>
+                    <button onClick={() => delCat(c.id, c.name)} style={{ padding: '4px 8px', fontSize: '0.75rem', background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid #f43f5e', borderRadius: '4px', cursor: 'pointer' }}>Sil</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
