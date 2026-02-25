@@ -313,8 +313,21 @@ select.input-field {
   }
 
   .btn {
-    padding: 1.125rem;
+    padding: 1rem;
     width: 100% !important;
+    font-size: 0.9rem;
+  }
+
+  h1 {
+    font-size: 2.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  h3 {
+    font-size: 1.25rem !important;
   }
 }
 

@@ -55,31 +55,33 @@ interface Question {
 const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
   <nav className="glass-card" style={{
     margin: '1.5rem',
-    padding: '1rem 2rem',
+    padding: '1rem',
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: '1rem',
     border: '1px solid hsla(var(--primary), 0.25)',
     background: 'hsla(var(--card), 0.7)'
   }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={onGoHome}>
-      <div style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.6rem', borderRadius: '12px' }}>
-        <GraduationCap size={26} color="hsl(var(--primary))" />
+      <div style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.4rem', borderRadius: '10px' }}>
+        <GraduationCap size={22} color="hsl(var(--primary))" />
       </div>
-      <span style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.03em' }}>QUIZ OF THE SEAS</span>
+      <span style={{ fontSize: 'min(5vw, 1.2rem)', fontWeight: 900, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>QUIZ OF THE SEAS</span>
     </div>
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem', fontWeight: 500 }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'hsla(var(--foreground), 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <User size={20} color="hsla(var(--foreground), 0.6)" />
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 500 }}>
+        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'hsla(var(--foreground), 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <User size={18} color="hsla(var(--foreground), 0.6)" />
         </div>
-        <span style={{ color: 'hsla(var(--foreground), 0.95)', fontWeight: 600 }}>
+        <span style={{ color: 'hsla(var(--foreground), 0.95)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
           {user}
-          {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.75rem', fontSize: '0.65rem', border: '1px solid hsla(var(--primary), 0.5)' }}>HOCA</span>}
+          {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.5rem', fontSize: '0.6rem', border: '1px solid hsla(var(--primary), 0.4)', padding: '2px 6px' }}>HOCA</span>}
         </span>
       </div>
-      <button onClick={onLogout} className="btn btn-ghost" style={{ padding: '0.6rem', color: 'hsl(var(--accent))' }}>
-        <LogOut size={20} />
+      <button onClick={onLogout} className="btn btn-ghost" style={{ padding: '0.5rem', minWidth: 'auto', width: 'auto', color: 'hsl(var(--accent))' }}>
+        <LogOut size={18} />
       </button>
     </div>
   </nav>
@@ -429,7 +431,7 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
             <input className="input-field" placeholder="Yeni Kategori..." value={newCat} onChange={e => setNewCat(e.target.value)} />
             <button
               className="btn btn-primary"
-              style={{ width: '52px', height: '52px', padding: 0, borderRadius: '14px', flexShrink: 0, boxShadow: '0 0 20px hsla(var(--primary), 0.3)' }}
+              style={{ width: '50px', height: '50px', padding: 0, borderRadius: '14px', flexShrink: 0, boxShadow: '0 0 20px hsla(var(--primary), 0.3)' }}
               onClick={addCat}
             >
               <Plus size={24} />
@@ -454,11 +456,11 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
                     <button className="btn btn-primary" style={{ padding: '0.5rem' }} onClick={() => updateCat(c.id)}><Save size={16} /></button>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.95rem', fontWeight: selectedCatId === c.id ? 700 : 500 }}>{c.name}</span>
-                    <div style={{ display: 'flex', gap: '0.25rem' }}>
-                      <button className="btn btn-ghost" style={{ padding: '0.25rem' }} onClick={(e) => { e.stopPropagation(); setEditingCatId(c.id); setEditingCatName(c.name); }}><Edit size={14} /></button>
-                      <button className="btn btn-ghost" style={{ padding: '0.25rem', color: 'hsl(var(--accent))' }} onClick={(e) => { e.stopPropagation(); deleteCat(c.id); }}><Trash2 size={14} /></button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: selectedCatId === c.id ? 700 : 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</span>
+                    <div style={{ display: 'flex', gap: '0.2rem' }}>
+                      <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto' }} onClick={(e) => { e.stopPropagation(); setEditingCatId(c.id); setEditingCatName(c.name); }}><Edit size={14} /></button>
+                      <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto', color: 'hsl(var(--accent))' }} onClick={(e) => { e.stopPropagation(); deleteCat(c.id); }}><Trash2 size={14} /></button>
                     </div>
                   </div>
                 )}
