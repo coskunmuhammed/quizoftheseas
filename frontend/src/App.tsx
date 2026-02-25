@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   GraduationCap,
-  User,
   CheckCircle,
   XCircle,
   ChevronRight,
   LogOut,
-  BookOpen,
-  PieChart
+  BookOpen
 } from 'lucide-react';
 
 const getApiBase = () => {
@@ -18,7 +16,7 @@ const getApiBase = () => {
 
 const API_BASE = getApiBase();
 
-const Navbar = ({ user, isAdmin, onLogout }: any) => (
+const Navbar = ({ user, onLogout }: any) => (
   <nav className="glass-card" style={{ margin: '0.5rem', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <GraduationCap size={24} color="#0ea5e9" />
@@ -35,7 +33,7 @@ const Navbar = ({ user, isAdmin, onLogout }: any) => (
 
 export default function App() {
   const [user, setUser] = useState<string | null>(localStorage.getItem('studentName'));
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState<string | null>(localStorage.getItem('studentName'));
   const [view, setView] = useState('dash');
   const [loginVal, setLoginVal] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
@@ -56,7 +54,6 @@ export default function App() {
     e.preventDefault();
     if (!loginVal.trim()) return;
     if (loginVal === 'admin_deniz') {
-      setIsAdmin(true);
       setUser('Admin');
       setView('admin');
     } else {
@@ -69,7 +66,6 @@ export default function App() {
   const onLogout = () => {
     localStorage.removeItem('studentName');
     setUser(null);
-    setIsAdmin(false);
     setView('dash');
   };
 
@@ -96,7 +92,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: 'white' }}>
-      <Navbar user={user} isAdmin={isAdmin} onLogout={onLogout} />
+      <Navbar user={user} onLogout={onLogout} />
 
       <main className="container">
         {view === 'dash' && (
