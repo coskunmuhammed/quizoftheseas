@@ -423,7 +423,7 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
           if (selectedCatId) fetchQs(selectedCatId);
           showToast('Soru silindi');
         })
-        .catch(err => showToast('Soru silinirken hata oluştu', 'error'))
+        .catch(() => showToast('Soru silinirken hata oluştu', 'error'))
         .finally(() => setConfirmModal({ ...confirmModal, isOpen: false }));
     }
   };
