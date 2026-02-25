@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.gemini
+*.sqlite
+*.sqlite-journal
+.DS_Store
+frontend/dist
+backend/dist
+api/index.js

@@ -1,0 +1,325 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import {
+  GraduationCap,
+  User,
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  LogOut,
+  BookOpen,
+  PieChart
+} from 'lucide-react';
+
+const getApiBase = () => {
+  const saved = localStorage.getItem('customApiUrl');
+  return saved || 'http://localhost:5000/api';
+};
+
+const API_BASE = getApiBase();
+
+const Navbar = ({ user, isAdmin, onLogout }: any) => (
+  <nav className="glass-card" style={{ margin: '0.5rem', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <GraduationCap size={24} color="#0ea5e9" />
+      <span style={{ fontSize: '1rem', fontWeight: 800, whiteSpace: 'nowrap' }}>DENİZ AKADEMİSİ</span>
+    </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.85rem' }}>
+      <span style={{ display: 'inline-block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user}</span>
+      <button onClick={onLogout} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <LogOut size={18} />
+      </button>
+    </div>
+  </nav>
+);
+
+export default function App() {
+  const [user, setUser] = useState<string | null>(localStorage.getItem('studentName'));
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [view, setView] = useState('dash');
+  const [loginVal, setLoginVal] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selCat, setSelCat] = useState<any>(null);
+  const [result, setResult] = useState<any>(null);
+
+  const fetchCats = () => {
+    axios.get(`${API_BASE}/categories`)
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('API Error:', err));
+  };
+
+  useEffect(() => {
+    if (user) fetchCats();
+  }, [user]);
+
+  const onLogin = (e: any) => {
+    e.preventDefault();
+    if (!loginVal.trim()) return;
+    if (loginVal === 'admin_deniz') {
+      setIsAdmin(true);
+      setUser('Admin');
+      setView('admin');
+    } else {
+      setUser(loginVal);
+      localStorage.setItem('studentName', loginVal);
+      setView('dash');
+    }
+  };
+
+  const onLogout = () => {
+    localStorage.removeItem('studentName');
+    setUser(null);
+    setIsAdmin(false);
+    setView('dash');
+  };
+
+  if (!user) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', padding: '1rem' }}>
+        <div className="glass-card" style={{ padding: '2rem', width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <GraduationCap size={48} color="#0ea5e9" style={{ marginBottom: '1rem' }} />
+          <h1>Deniz Akademisi</h1>
+          <p style={{ color: '#94a3b8', margin: '0.5rem 0 1.5rem 0' }}>Soru Bankasına Giriş Yapın</p>
+          <form onSubmit={onLogin}>
+            <input
+              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #334155', background: '#1e293b', color: 'white', marginBottom: '1rem' }}
+              placeholder="Ad Soyad"
+              value={loginVal}
+              onChange={e => setLoginVal(e.target.value)}
+            />
+            <button className="btn btn-primary" style={{ width: '100%' }}>Giriş Yap</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#0f172a', color: 'white' }}>
+      <Navbar user={user} isAdmin={isAdmin} onLogout={onLogout} />
+
+      <main className="container">
+        {view === 'dash' && (
+          <div>
+            <h2 style={{ marginBottom: '2rem' }}>Eğitim Kategorileri</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+              {categories.map((c: any) => (
+                <div key={c.id} className="glass-card" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => { setSelCat(c); setView('quiz'); }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <BookOpen color="#0ea5e9" />
+                      <h3 style={{ fontSize: '1.25rem' }}>{c.name}</h3>
+                    </div>
+                    <ChevronRight color="#94a3b8" />
+                  </div>
+                </div>
+              ))}
+              {categories.length === 0 && <p style={{ color: '#94a3b8' }}>Henüz kategori eklenmemiş.</p>}
+            </div>
+          </div>
+        )}
+
+        {view === 'quiz' && selCat && (
+          <QuizView_Internal category={selCat} onFinish={(s: any, t: any, a: any) => { setResult({ score: s, total: t, answers: a }); setView('res'); }} />
+        )}
+
+        {view === 'res' && result && (
+          <ResultsView_Internal {...result} onBack={() => setView('dash')} />
+        )}
+
+        {view === 'admin' && (
+          <AdminPanel_Internal categories={categories} fetchCategories={fetchCats} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+// --- Internal View Components ---
+
+function QuizView_Internal({ category, onFinish }: any) {
+  const [qs, setQs] = useState([]);
+  const [idx, setIdx] = useState(0);
+  const [sel, setSel] = useState(null);
+  const [ans, setAns] = useState([]);
+  const [load, setLoad] = useState(true);
+
+  useEffect(() => {
+    axios.get(`${API_BASE}/questions?category_id=${category.id}`)
+      .then(res => { setQs(res.data); setLoad(false); })
+      .catch(() => setLoad(false));
+  }, [category.id]);
+
+  if (load) return <div style={{ textAlign: 'center', padding: '4rem' }}>Yükleniyor...</div>;
+  if (!qs.length) return <div style={{ textAlign: 'center', padding: '4rem' }}>Soru yok.</div>;
+
+  const current = qs[idx] as any;
+
+  const next = () => {
+    if (!sel) return;
+    const isCorr = sel === current.correct_option;
+    const nextAns = [...ans, { question: current, selected: sel, isCorrect: isCorr }] as any;
+    setAns(nextAns);
+    if (idx < qs.length - 1) { setIdx(idx + 1); setSel(null); }
+    else { onFinish(nextAns.filter((a: any) => a.isCorrect).length, qs.length, nextAns); }
+  };
+
+  return (
+    <div className="glass-card" style={{ padding: '2.5rem', maxWidth: '800px', margin: '0 auto' }}>
+      <div style={{ marginBottom: '1.5rem', color: '#94a3b8' }}>Soru {idx + 1} / {qs.length}</div>
+      <h2 style={{ marginBottom: '2rem' }}>{current.question_text}</h2>
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {['a', 'b', 'c', 'd'].map(o => (
+          <button key={o} onClick={() => setSel(o as any)} className="glass-card" style={{ padding: '1.25rem', textAlign: 'left', borderColor: sel === o ? '#0ea5e9' : 'rgba(255,255,255,0.1)', background: sel === o ? 'rgba(14, 165, 233, 0.1)' : 'transparent', color: 'white', cursor: 'pointer' }}>
+            <span style={{ fontWeight: 800, marginRight: '1rem' }}>{o.toUpperCase()}</span> {current[`option_${o}`]}
+          </button>
+        ))}
+      </div>
+      <button className="btn btn-primary" style={{ width: '100%', marginTop: '2.5rem', opacity: sel ? 1 : 0.5 }} disabled={!sel} onClick={next}>
+        {idx === qs.length - 1 ? 'Testi Bitir' : 'Sonraki Soru'}
+      </button>
+    </div>
+  );
+}
+
+function ResultsView_Internal({ score, total, answers, onBack }: any) {
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      <div className="glass-card" style={{ padding: '3rem', textAlign: 'center', marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: '3.5rem' }}>%{Math.round((score / total) * 100)}</h1>
+        <p style={{ fontSize: '1.25rem', color: '#94a3b8' }}>{total} Soruda {score} Doğru</p>
+        <button className="btn btn-primary" style={{ marginTop: '2rem' }} onClick={onBack}>Dashboard'a Dön</button>
+      </div>
+      {answers.map((a: any, i: number) => (
+        <div key={i} className="glass-card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+            {a.isCorrect ? <CheckCircle color="#10b981" /> : <XCircle color="#f43f5e" />}
+            <h3>{a.question.question_text}</h3>
+          </div>
+          <div style={{ marginLeft: '2.5rem' }}>
+            <p>Cevabınız: <span style={{ color: a.isCorrect ? '#10b981' : '#f43f5e', fontWeight: 600 }}>{a.selected.toUpperCase()}</span></p>
+            {!a.isCorrect && <p>Doğru Cevap: <span style={{ color: '#10b981', fontWeight: 600 }}>{a.question.correct_option.toUpperCase()}</span></p>}
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '0.5rem', borderLeft: '4px solid #0ea5e9' }}>
+              <strong>Neden?</strong><br />{a.question.explanation || 'Açıklama yok.'}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AdminPanel_Internal({ categories, fetchCategories }: any) {
+  const [nc, setNc] = useState('');
+  const [sc, setSc] = useState('');
+  const [q, setQ] = useState({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
+
+  const exportData = () => {
+    axios.get(`${API_BASE}/export`).then(res => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "deniz_akademi_yedek.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    });
+  };
+
+  const importData = (e: any) => {
+    const fileReader = new FileReader();
+    fileReader.readAsText(e.target.files[0], "UTF-8");
+    fileReader.onload = (event: any) => {
+      const json = JSON.parse(event.target.result);
+      if (confirm('Mevcut tüm veriler silinecek ve yedek yüklenecek. Emin misiniz?')) {
+        axios.post(`${API_BASE}/import`, json).then(() => {
+          alert('Yedek başarıyla yüklendi!');
+          fetchCategories();
+        });
+      }
+    };
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 900 ? '1fr 1fr' : '1fr', gap: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h3>Kategori Ekle</h3>
+            <input className="input-field" style={{ margin: '1rem 0' }} placeholder="Kategori Adı" value={nc} onChange={e => setNc(e.target.value)} />
+            <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => axios.post(`${API_BASE}/categories`, { name: nc }).then(() => { setNc(''); fetchCategories(); })}>Ekle</button>
+          </div>
+
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h3>Veri Yönetimi</h3>
+            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
+              <button className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }} onClick={exportData}>Verileri Yedekle (.json)</button>
+              <label className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'white', cursor: 'pointer', textAlign: 'center' }}>
+                Yedekten Yükle
+                <input type="file" hidden onChange={importData} accept=".json" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <h3>Soru Ekle</h3>
+          <select className="input-field" style={{ margin: '1rem 0', background: '#0f172a' }} value={sc} onChange={e => setSc(e.target.value)}>
+            <option value="">Kategori Seçin</option>
+            {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <textarea className="input-field" placeholder="Soru Metni" value={q.t} onChange={e => setQ({ ...q, t: e.target.value })} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', margin: '1rem 0' }}>
+            <input className="input-field" placeholder="A" value={q.a} onChange={e => setQ({ ...q, a: e.target.value })} />
+            <input className="input-field" placeholder="B" value={q.b} onChange={e => setQ({ ...q, b: e.target.value })} />
+            <input className="input-field" placeholder="C" value={q.c} onChange={e => setQ({ ...q, c: e.target.value })} />
+            <input className="input-field" placeholder="D" value={q.d} onChange={e => setQ({ ...q, d: e.target.value })} />
+          </div>
+          <select className="input-field" style={{ margin: '0 0 1rem 0', background: '#0f172a' }} value={q.k} onChange={e => setQ({ ...q, k: e.target.value })}>
+            <option value="a">Cevap: A</option><option value="b">Cevap: B</option><option value="c">Cevap: C</option><option value="d">Cevap: D</option>
+          </select>
+          <textarea className="input-field" placeholder="Neden? / Açıklama" value={q.e} onChange={e => setQ({ ...q, e: e.target.value })} />
+          <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} onClick={() => {
+            if (!sc || !q.t.trim() || !q.a.trim() || !q.b.trim() || !q.c.trim() || !q.d.trim()) {
+              alert('Lütfen tüm gerekli alanları doldurun.');
+              return;
+            }
+            axios.post(`${API_BASE}/questions`, { category_id: sc, question_text: q.t, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.k, explanation: q.e }).then(() => { alert('Soru Kaydedildi'); setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' }); });
+          }}>Soru Kaydet</button>
+        </div>
+      </div>
+
+      <div className="glass-card" style={{ padding: '1.5rem', background: 'rgba(14, 165, 233, 0.05)' }}>
+        <h3 style={{ color: '#0ea5e9' }}>Dünya Geneli Paylaşım (Mobile/Tablet)</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 600 ? '1fr 1fr' : '1fr', gap: '2rem', marginTop: '1rem' }}>
+          <div>
+            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>
+              Telefondan erişim için ngrok linklerinizi kullanın:
+            </p>
+            <ol style={{ fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <li>Frontend tünel linkini telefon tarayıcısına yazın.</li>
+              <li>Aşağıdaki kutuya backend tünel linkini yazıp kaydedin.</li>
+            </ol>
+          </div>
+          <div>
+            <input
+              className="input-field"
+              placeholder="https://backend-id.ngrok-free.app/api"
+              style={{ fontSize: '0.75rem' }}
+              onBlur={(e) => {
+                if (e.target.value) {
+                  localStorage.setItem('customApiUrl', e.target.value);
+                  alert('API URL güncellendi. Sayfa yenileniyor...');
+                  window.location.reload();
+                }
+              }}
+            />
+            <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '1rem' }}>
+              *İpucu: Linki QR koda dönüştürüp telefonunuzdan hızlıca taratabilirsiniz.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
