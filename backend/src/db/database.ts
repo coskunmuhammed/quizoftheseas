@@ -1,46 +1,11 @@
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
-let db: Database | null = null;
+const SUPABASE_URL = 'https://utammtangicjaseucyhd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VsoaC3k3K4rzPPPJTBNAGw_m8KUh2fF';
 
-export async function openDb(): Promise<Database> {
-    if (db) return db;
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    db = await open({
-        filename: path.join(__dirname, '../../database.sqlite'),
-        driver: sqlite3.Database
-    });
-
-    await db.exec(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE
-    );
-
-    CREATE TABLE IF NOT EXISTS questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      category_id INTEGER,
-      question_text TEXT NOT NULL,
-      option_a TEXT NOT NULL,
-      option_b TEXT NOT NULL,
-      option_c TEXT NOT NULL,
-      option_d TEXT NOT NULL,
-      correct_option TEXT NOT NULL,
-      explanation TEXT,
-      FOREIGN KEY (category_id) REFERENCES categories (id)
-    );
-
-    CREATE TABLE IF NOT EXISTS results (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_name TEXT NOT NULL,
-      category_id INTEGER,
-      score INTEGER,
-      total_questions INTEGER,
-      timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (category_id) REFERENCES categories (id)
-    );
-  `);
-
-    return db;
+// For backward compatibility during transition
+export async function openDb() {
+  return null as any;
 }
