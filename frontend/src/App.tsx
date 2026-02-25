@@ -209,32 +209,6 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
   const [sc, setSc] = useState('');
   const [q, setQ] = useState({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' });
 
-  const exportData = () => {
-    axios.get(`${API_BASE}/export`).then(res => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "deniz_akademi_yedek.json");
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    });
-  };
-
-  const importData = (e: any) => {
-    const fileReader = new FileReader();
-    fileReader.readAsText(e.target.files[0], "UTF-8");
-    fileReader.onload = (event: any) => {
-      const json = JSON.parse(event.target.result);
-      if (confirm('Mevcut tüm veriler silinecek ve yedek yüklenecek. Emin misiniz?')) {
-        axios.post(`${API_BASE}/import`, json).then(() => {
-          alert('Yedek başarıyla yüklendi!');
-          fetchCategories();
-        });
-      }
-    };
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 900 ? '1fr 1fr' : '1fr', gap: '2rem' }}>
@@ -243,17 +217,6 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
             <h3>Kategori Ekle</h3>
             <input className="input-field" style={{ margin: '1rem 0' }} placeholder="Kategori Adı" value={nc} onChange={e => setNc(e.target.value)} />
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => axios.post(`${API_BASE}/categories`, { name: nc }).then(() => { setNc(''); fetchCategories(); })}>Ekle</button>
-          </div>
-
-          <div className="glass-card" style={{ padding: '1.5rem' }}>
-            <h3>Veri Yönetimi</h3>
-            <div style={{ display: 'grid', gap: '1rem', marginTop: '1rem' }}>
-              <button className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'white' }} onClick={exportData}>Verileri Yedekle (.json)</button>
-              <label className="btn" style={{ background: 'rgba(255,255,255,0.05)', color: 'white', cursor: 'pointer', textAlign: 'center' }}>
-                Yedekten Yükle
-                <input type="file" hidden onChange={importData} accept=".json" />
-              </label>
-            </div>
           </div>
         </div>
 
@@ -281,38 +244,6 @@ function AdminPanel_Internal({ categories, fetchCategories }: any) {
             }
             axios.post(`${API_BASE}/questions`, { category_id: sc, question_text: q.t, option_a: q.a, option_b: q.b, option_c: q.c, option_d: q.d, correct_option: q.k, explanation: q.e }).then(() => { alert('Soru Kaydedildi'); setQ({ t: '', a: '', b: '', c: '', d: '', k: 'a', e: '' }); });
           }}>Soru Kaydet</button>
-        </div>
-      </div>
-
-      <div className="glass-card" style={{ padding: '1.5rem', background: 'rgba(14, 165, 233, 0.05)' }}>
-        <h3 style={{ color: '#0ea5e9' }}>Dünya Geneli Paylaşım (Mobile/Tablet)</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 600 ? '1fr 1fr' : '1fr', gap: '2rem', marginTop: '1rem' }}>
-          <div>
-            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '1rem' }}>
-              Telefondan erişim için ngrok linklerinizi kullanın:
-            </p>
-            <ol style={{ fontSize: '0.85rem', color: '#94a3b8', paddingLeft: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <li>Frontend tünel linkini telefon tarayıcısına yazın.</li>
-              <li>Aşağıdaki kutuya backend tünel linkini yazıp kaydedin.</li>
-            </ol>
-          </div>
-          <div>
-            <input
-              className="input-field"
-              placeholder="https://backend-id.ngrok-free.app/api"
-              style={{ fontSize: '0.75rem' }}
-              onBlur={(e) => {
-                if (e.target.value) {
-                  localStorage.setItem('customApiUrl', e.target.value);
-                  alert('API URL güncellendi. Sayfa yenileniyor...');
-                  window.location.reload();
-                }
-              }}
-            />
-            <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '1rem' }}>
-              *İpucu: Linki QR koda dönüştürüp telefonunuzdan hızlıca taratabilirsiniz.
-            </p>
-          </div>
         </div>
       </div>
     </div>
