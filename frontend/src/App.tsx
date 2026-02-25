@@ -697,9 +697,13 @@ export default function App() {
 
   if (!user) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#f8fafc' }}>
-        <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#1e293b', marginBottom: '2rem', letterSpacing: '-0.03em', textAlign: 'center' }}>
-          Quiz of the <span style={{ color: 'hsl(var(--primary))' }}>Seas</span>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: 'hsl(var(--background))', position: 'relative', overflow: 'hidden' }}>
+        {/* Login Specific Marine Blobs */}
+        <div className="marine-blob" style={{ width: '300px', height: '300px', top: '-10%', right: '-10%', opacity: 0.5 }}></div>
+        <div className="marine-blob" style={{ width: '400px', height: '400px', bottom: '-20%', left: '-10%', opacity: 0.5, animationDelay: '-8s' }}></div>
+
+        <h2 style={{ fontSize: '3.5rem', fontWeight: 900, color: 'white', marginBottom: '2.5rem', letterSpacing: '-0.04em', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+          Quiz of the <span style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Seas</span>
         </h2>
         <div className="login-card-white animate-fade-in">
           <h1 className="login-header-text">Giriş Yap</h1>
@@ -730,9 +734,14 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: '4rem', position: 'relative', overflow: 'hidden' }}>
+      {/* Marine Blobs Background Decor */}
+      <div className="marine-blob" style={{ width: '400px', height: '400px', top: '10%', left: '-10%' }}></div>
+      <div className="marine-blob" style={{ width: '600px', height: '600px', bottom: '10%', right: '-10%', animationDelay: '-5s' }}></div>
+      <div className="marine-blob" style={{ width: '300px', height: '300px', top: '50%', right: '5%', animationDelay: '-10s' }}></div>
+
       <Navbar user={user} isAdmin={isAdmin} onLogout={onLogout} onGoHome={() => setView(isAdmin ? 'admin' : 'dash')} />
-      <main className="container">
+      <main className="container" style={{ position: 'relative', zIndex: 1 }}>
         {view === 'dash' && (
           <div className="animate-fade-in">
             <h2 style={{ marginBottom: '2.5rem', fontSize: '1.75rem' }}>Eğitim Kategorileri</h2>
