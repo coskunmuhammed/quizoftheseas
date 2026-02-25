@@ -59,7 +59,8 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    border: '1px solid hsla(var(--foreground), 0.1)'
+    border: '1px solid hsla(var(--primary), 0.25)',
+    background: 'hsla(var(--card), 0.7)'
   }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={onGoHome}>
       <div style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.6rem', borderRadius: '12px' }}>
@@ -72,9 +73,9 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
         <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'hsla(var(--foreground), 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <User size={20} color="hsla(var(--foreground), 0.6)" />
         </div>
-        <span style={{ color: 'hsla(var(--foreground), 0.8)' }}>
+        <span style={{ color: 'hsla(var(--foreground), 0.95)', fontWeight: 600 }}>
           {user}
-          {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.75rem', fontSize: '0.65rem' }}>HOCA</span>}
+          {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.75rem', fontSize: '0.65rem', border: '1px solid hsla(var(--primary), 0.5)' }}>HOCA</span>}
         </span>
       </div>
       <button onClick={onLogout} className="btn btn-ghost" style={{ padding: '0.6rem', color: 'hsl(var(--accent))' }}>
@@ -153,8 +154,8 @@ const FileUpload = ({ currentImage, onUpload, showToast }: any) => {
             <Plus size={32} color="hsl(var(--primary))" />
           </div>
           <div>
-            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>Görseli Buraya Sürükleyin</h4>
-            <p style={{ fontSize: '0.9rem', opacity: 0.5 }}>veya bilgisayarınızdan seçmek için tıklayın</p>
+            <h4 style={{ fontSize: '1.1rem', marginBottom: '0.25rem', color: 'hsl(var(--foreground))' }}>Görseli Buraya Sürükleyin</h4>
+            <p style={{ fontSize: '0.9rem', opacity: 0.7, color: 'hsla(var(--foreground), 0.7)' }}>veya bilgisayarınızdan seçmek için tıklayın</p>
           </div>
         </div>
         {uploading && (
@@ -230,8 +231,8 @@ const QuizView = ({ category, onFinish }: any) => {
     <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
       <div className="glass-card" style={{ padding: '2.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <span className="badge badge-primary">{category.name}</span>
-          <span style={{ fontSize: '0.85rem', color: 'hsla(var(--foreground), 0.5)' }}>Soru {currentIndex + 1} / {questions.length}</span>
+          <span className="badge badge-primary" style={{ border: '1px solid hsla(var(--primary), 0.5)' }}>{category.name}</span>
+          <span style={{ fontSize: '0.85rem', color: 'hsla(var(--foreground), 0.7)', fontWeight: 600 }}>Soru {currentIndex + 1} / {questions.length}</span>
         </div>
 
         <h2 style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>{currentQ.question_text}</h2>
@@ -286,7 +287,7 @@ const ResultsView = ({ score, total, answers, onBack }: any) => {
         <h1 style={{ fontSize: '4rem', marginBottom: '0.5rem', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           %{percentage}
         </h1>
-        <p style={{ color: 'hsla(var(--foreground), 0.6)', fontSize: '1.1rem', marginBottom: '2rem' }}>{total} Soruda {score} Doğru</p>
+        <p style={{ color: 'hsla(var(--foreground), 0.85)', fontSize: '1.1rem', marginBottom: '2rem', fontWeight: 500 }}>{total} Soruda {score} Doğru</p>
         <button className="btn btn-primary" onClick={onBack}>
           <ChevronLeft size={20} />
           Ana Sayfaya Dön
@@ -418,7 +419,7 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
 
       {/* Sidebar: Categories */}
       <aside className="dash-sidebar" style={{ position: 'sticky', top: '2rem' }}>
-        <div className="glass-card shadow-lg" style={{ padding: '1.75rem' }}>
+        <div className="glass-card shadow-lg" style={{ padding: '1.75rem', background: 'rgba(2, 6, 10, 0.6)' }}>
           <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem' }}>
             <BookOpen size={22} color="hsl(var(--primary))" />
             Kategoriler
@@ -428,7 +429,7 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
             <input className="input-field" placeholder="Yeni Kategori..." value={newCat} onChange={e => setNewCat(e.target.value)} />
             <button
               className="btn btn-primary"
-              style={{ width: '52px', height: '52px', padding: 0, borderRadius: '14px', flexShrink: 0 }}
+              style={{ width: '52px', height: '52px', padding: 0, borderRadius: '14px', flexShrink: 0, boxShadow: '0 0 20px hsla(var(--primary), 0.3)' }}
               onClick={addCat}
             >
               <Plus size={24} />
@@ -597,9 +598,9 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
                           <p style={{ fontWeight: 600, fontSize: '1.05rem', lineHeight: 1.5 }}>{sq.question_text}</p>
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                          <span className="badge" style={{ background: 'hsla(var(--primary), 0.1)', color: 'hsl(var(--primary))' }}>Doğru: {sq.correct_option.toUpperCase()}</span>
-                          {sq.image_url && <span className="badge" style={{ background: 'hsla(var(--secondary), 0.1)', color: 'hsl(var(--secondary))' }}>Görselli</span>}
-                          {sq.explanation && <span className="badge" style={{ background: 'hsla(var(--foreground), 0.05)', color: 'hsla(var(--foreground), 0.5)' }}>Açıklamalı</span>}
+                          <span className="badge" style={{ background: 'hsla(var(--primary), 0.15)', color: 'hsl(var(--primary))', border: '1px solid hsla(var(--primary), 0.3)' }}>Doğru: {sq.correct_option.toUpperCase()}</span>
+                          {sq.image_url && <span className="badge" style={{ background: 'hsla(var(--secondary), 0.15)', color: 'hsl(var(--secondary))', border: '1px solid hsla(var(--secondary), 0.3)' }}>Görselli</span>}
+                          {sq.explanation && <span className="badge" style={{ background: 'hsla(var(--foreground), 0.08)', color: 'hsla(var(--foreground), 0.8)', border: '1px solid hsla(var(--foreground), 0.1)' }}>Açıklamalı</span>}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -624,8 +625,8 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
               <BookOpen size={48} color="hsl(var(--primary))" />
             </div>
             <div>
-              <h3 style={{ fontSize: '1.75rem', marginBottom: '0.75rem' }}>Yönetime Başlayın</h3>
-              <p style={{ color: 'hsla(var(--foreground), 0.5)', maxWidth: '450px', margin: '0 auto', fontSize: '1.1rem' }}>
+              <h3 style={{ fontSize: '1.75rem', marginBottom: '0.75rem', color: 'white' }}>Yönetime Başlayın</h3>
+              <p style={{ color: 'hsla(var(--foreground), 0.8)', maxWidth: '450px', margin: '0 auto', fontSize: '1.1rem', fontWeight: 500 }}>
                 Soruları yönetmek veya yenilerini eklemek için sol taraftaki panelden bir kategori seçin.
               </p>
             </div>
@@ -734,7 +735,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '4rem', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: '4rem', position: 'relative', overflow: 'hidden', background: '#010305' }}>
       {/* Marine Blobs Background Decor */}
       <div className="marine-blob" style={{ width: '400px', height: '400px', top: '10%', left: '-10%' }}></div>
       <div className="marine-blob" style={{ width: '600px', height: '600px', bottom: '10%', right: '-10%', animationDelay: '-5s' }}></div>
@@ -744,7 +745,7 @@ export default function App() {
       <main className="container" style={{ position: 'relative', zIndex: 1 }}>
         {view === 'dash' && (
           <div className="animate-fade-in">
-            <h2 style={{ marginBottom: '2.5rem', fontSize: '1.75rem' }}>Eğitim Kategorileri</h2>
+            <h2 style={{ marginBottom: '2.5rem', fontSize: '1.75rem', color: 'white' }}>Eğitim Kategorileri</h2>
             {apiError && (
               <div style={{ padding: '1.25rem', background: 'hsla(var(--accent), 0.1)', color: 'hsl(var(--accent))', borderRadius: '1rem', marginBottom: '2rem', border: '1px solid hsla(var(--accent), 0.2)' }}>
                 <strong>Bağlantı Hatası:</strong> {apiError}
@@ -756,10 +757,10 @@ export default function App() {
                   onClick={() => { setSelCat(c); setView('quiz'); }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'hsla(var(--primary), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'hsla(var(--primary), 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid hsla(var(--primary), 0.2)' }}>
                         <BookOpen color="hsl(var(--primary))" />
                       </div>
-                      <h3 style={{ fontSize: '1.25rem' }}>{c.name}</h3>
+                      <h3 style={{ fontSize: '1.25rem', color: 'white' }}>{c.name}</h3>
                     </div>
                     <ChevronRight color="hsla(var(--foreground), 0.3)" />
                   </div>
