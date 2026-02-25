@@ -65,7 +65,7 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome }: any) => (
       <div style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.6rem', borderRadius: '12px' }}>
         <GraduationCap size={26} color="hsl(var(--primary))" />
       </div>
-      <span style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.03em' }}>DENİZ AKADEMİSİ</span>
+      <span style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.03em' }}>QUIZ OF THE SEAS</span>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.95rem', fontWeight: 500 }}>
@@ -684,7 +684,7 @@ export default function App() {
   const onLogin = (e: any) => {
     e.preventDefault();
     if (!loginVal.trim()) return;
-    if (loginVal === 'admin_deniz') {
+    if (loginVal === 'admin_quiz') {
       setIsAdmin(true);
       setUser('Hoca');
       setView('admin');
@@ -703,8 +703,8 @@ export default function App() {
             <div style={{ position: 'absolute', inset: '-20px', background: 'hsla(var(--primary), 0.2)', filter: 'blur(20px)', borderRadius: '50%' }}></div>
             <GraduationCap size={72} color="hsl(var(--primary))" style={{ position: 'relative' }} />
           </div>
-          <h1 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>Deniz Akademisi</h1>
-          <p style={{ color: 'hsla(var(--foreground), 0.5)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>Eğitim ve Soru Bankası Platformu</p>
+          <h1 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>Quiz of the Seas</h1>
+          <p style={{ color: 'hsla(var(--foreground), 0.5)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>Quiz of the Seas Eğitim Platformu</p>
           <form onSubmit={onLogin}>
             <input className="input-field" style={{ marginBottom: '1rem' }} placeholder="Ad Soyad" value={loginVal} onChange={e => setLoginVal(e.target.value)} />
             <button className="btn btn-primary" style={{ width: '100%' }}>Giriş Yap</button>
