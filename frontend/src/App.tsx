@@ -11,7 +11,11 @@ import {
 
 const getApiBase = () => {
   const saved = localStorage.getItem('customApiUrl');
-  return saved || 'http://localhost:5000/api';
+  if (saved) return saved;
+  // Vercel deployment uses /api rewrite, local development uses port 5000
+  return window.location.hostname === 'localhost'
+    ? 'http://localhost:5000/api'
+    : '/api';
 };
 
 const API_BASE = getApiBase();
