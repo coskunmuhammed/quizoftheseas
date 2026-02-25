@@ -697,17 +697,29 @@ export default function App() {
 
   if (!user) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-        <div className="glass-card animate-fade-in" style={{ padding: '3.5rem', width: '100%', maxWidth: '450px', textAlign: 'center' }}>
-          <div style={{ position: 'relative', display: 'inline-block', marginBottom: '2rem' }}>
-            <div style={{ position: 'absolute', inset: '-20px', background: 'hsla(var(--primary), 0.2)', filter: 'blur(20px)', borderRadius: '50%' }}></div>
-            <GraduationCap size={72} color="hsl(var(--primary))" style={{ position: 'relative' }} />
-          </div>
-          <h1 style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>Quiz of the Seas</h1>
-          <p style={{ color: 'hsla(var(--foreground), 0.5)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>Quiz of the Seas Eğitim Platformu</p>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem', background: '#f8fafc' }}>
+        <div className="login-card-white animate-fade-in">
+          <h1 className="login-header-text">Giriş Yap</h1>
+          <p className="login-subtitle">Hesabınıza giriş yaparak devam edin.</p>
+
           <form onSubmit={onLogin}>
-            <input className="input-field" style={{ marginBottom: '1rem' }} placeholder="Ad Soyad" value={loginVal} onChange={e => setLoginVal(e.target.value)} />
-            <button className="btn btn-primary" style={{ width: '100%' }}>Giriş Yap</button>
+            <div className="login-input-group">
+              <label className="login-label">Ad Soyad</label>
+              <div className="login-field-wrapper">
+                <User className="login-field-icon" size={22} />
+                <input
+                  className="login-input-white"
+                  placeholder="Kullanıcı adınızı girin"
+                  value={loginVal}
+                  onChange={e => setLoginVal(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button className="login-btn-dark">
+              <span>Giriş Yap</span>
+              <ChevronRight size={22} />
+            </button>
           </form>
         </div>
       </div>
