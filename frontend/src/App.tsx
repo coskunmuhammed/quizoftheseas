@@ -33,7 +33,6 @@ const Navbar = ({ user, onLogout }: any) => (
 
 export default function App() {
   const [user, setUser] = useState<string | null>(localStorage.getItem('studentName'));
-  const [user, setUser] = useState<string | null>(localStorage.getItem('studentName'));
   const [view, setView] = useState('dash');
   const [loginVal, setLoginVal] = useState('');
   const [categories, setCategories] = useState<any[]>([]);
