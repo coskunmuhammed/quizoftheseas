@@ -787,7 +787,7 @@ export default function App() {
         </h2>
         <div className="login-card-white animate-fade-in">
           <h1 className="login-header-text">Giriş Yap</h1>
-          <p className="login-subtitle">Hesabınıza giriş yaparak devam edin.</p>
+          <p className="login-subtitle">Adınızı girin ve soruları çözmeye başlayın</p>
 
           <form onSubmit={onLogin}>
             <div className="login-input-group">
