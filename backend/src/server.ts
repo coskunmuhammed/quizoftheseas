@@ -1,8 +1,11 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-
 import apiRoutes from './routes/api';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const PORT = 5000;

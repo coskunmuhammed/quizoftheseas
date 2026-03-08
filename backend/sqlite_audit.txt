@@ -1,0 +1,4 @@
+INFO: c:\Users\Dell\Desktop\Derin Deniz\database.sqlite | SIZE: 0 | NO QUESTIONS TABLE
+FOUND: c:\Users\Dell\Desktop\Derin Deniz\backend\database.sqlite | SIZE: 24576 | QUESTIONS: 10
+ERROR: c:\Users\Dell\Desktop\Derin Deniz\backend\database.sqlite-journal | file is not a database
+FOUND: c:\Users\Dell\Desktop\Derin Deniz\backend\offline.sqlite | SIZE: 12288 | QUESTIONS: 12

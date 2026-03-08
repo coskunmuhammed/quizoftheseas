@@ -8,3 +8,5 @@ dist
 frontend/dist
 backend/dist
 api/index.js
+.vercel
+.env*.local

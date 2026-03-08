@@ -1,0 +1,2 @@
+c:\Users\Dell\Desktop\Derin Deniz\backend\database.sqlite | SIZE: 24576 | QUESTIONS: 10
+c:\Users\Dell\Desktop\Derin Deniz\backend\offline.sqlite | SIZE: 12288 | QUESTIONS: 12

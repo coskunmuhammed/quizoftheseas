@@ -3,13 +3,18 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
+        "dev": "cd frontend && npm run dev",
+        "dev-backend": "cd backend && npm run dev",
         "build": "cd frontend && npm install && npm run build"
     },
     "dependencies": {
         "express": "^5.2.1",
         "cors": "^2.8.6",
         "body-parser": "^2.2.2",
-        "@supabase/supabase-js": "^2.97.0"
+        "@supabase/supabase-js": "^2.97.0",
+        "@google/generative-ai": "^0.24.1",
+        "dotenv": "^16.4.7",
+        "axios": "^1.13.5"
     },
     "devDependencies": {
         "typescript": "^5.9.3",

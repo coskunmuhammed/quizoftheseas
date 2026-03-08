@@ -169,6 +169,14 @@ select.input-field {
   background-repeat: no-repeat;
   background-position: right 1.25rem center;
   background-size: 1.25rem;
+  background-color: rgba(2, 6, 10, 0.95);
+  /* Ensure a solid dark background */
+}
+
+select.input-field option {
+  background-color: #0c121d;
+  color: #f0faff;
+  padding: 10px;
 }
 
 .option-btn {
@@ -272,15 +280,15 @@ select.input-field {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .form-heading label {
-  font-size: 0.9rem !important;
-  font-weight: 900 !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
   color: hsl(var(--primary)) !important;
   text-transform: uppercase;
-  letter-spacing: 0.25em !important;
+  letter-spacing: 0.15em !important;
   white-space: nowrap;
 }
 
@@ -405,6 +413,36 @@ select.input-field {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+/* Login Specific Styles */
+.login-container {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 50%, hsla(var(--primary), 0.15), transparent 80%);
+  padding: 2rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 3.5rem !important;
+  border-radius: 3rem !important;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.8), 0 0 50px -10px hsla(var(--primary), 0.3) !important;
+}
+
+.hero-icon-container {
+  width: 80px;
+  height: 80px;
+  background: hsla(var(--primary), 0.1);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  border: 1px solid hsla(var(--primary), 0.2);
+}
+
 /* Premium Toast Notification */
 .toast-container {
   position: fixed;
@@ -429,6 +467,70 @@ select.input-field {
   animation: toastSlideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   pointer-events: auto;
   min-width: 320px;
+}
+
+/* Category Grid UI */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.category-card {
+  background: hsla(var(--card), 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsla(var(--primary), 0.15);
+  border-radius: 2rem 4rem 1.5rem 3rem;
+  padding: 2.5rem;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 45px -10px rgba(0, 0, 0, 0.4);
+}
+
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(circle at top right, hsla(var(--primary), 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.category-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  border-color: hsla(var(--primary), 0.4);
+  background: hsla(var(--card), 0.8);
+  box-shadow:
+    0 40px 80px -25px rgba(0, 0, 0, 0.6),
+    0 0 40px -10px hsla(var(--primary), 0.3);
+}
+
+.category-card:hover::before {
+  opacity: 1;
+}
+
+.category-icon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.category-card:hover .category-icon {
+  transform: rotate(10deg) scale(1.1);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes toastSlideIn {
@@ -635,4 +737,34 @@ select.input-field {
   background: #1e293b;
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown & Scrollbar Tweaks */
+.admin-dropdown::-webkit-scrollbar {
+  width: 4px;
+}
+
+.admin-dropdown::-webkit-scrollbar-thumb {
+  background: hsla(var(--primary), 0.3);
+  border-radius: 10px;
+}
+
+/* Spinner for AI */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid hsla(var(--primary), 0.1);
+  border-top: 2px solid hsl(var(--primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
