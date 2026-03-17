@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import {
   GraduationCap,
@@ -578,7 +579,7 @@ const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }
 
   if (!isOpen || !student) return null;
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', inset: 0, zIndex: 99999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -607,7 +608,7 @@ const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }
               ))}
             </select>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: '120px' }}>
-              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px', background: 'rgb(15, 30, 50)', color: 'white', border: '1px solid hsla(var(--primary), 0.4)', textAlign: 'center', fontWeight: 800, fontSize: '1.1rem' }} />
+              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px', padding: '0.5rem', background: 'rgb(15, 30, 50)', color: 'white', border: '1px solid hsla(var(--primary), 0.4)', textAlign: 'center', fontWeight: 800, fontSize: '1.1rem' }} />
               <span style={{ fontSize: '0.85rem' }}>Gün</span>
             </div>
             <button className="btn btn-primary" onClick={handleAssign} disabled={!selectedCatId}>Ata</button>
@@ -642,7 +643,8 @@ const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
