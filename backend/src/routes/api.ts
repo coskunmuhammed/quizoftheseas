@@ -64,7 +64,7 @@ router.delete('/categories/:id', async (req, res) => {
 // Questions
 router.get('/questions', async (req, res) => {
     const { category_id } = req.query;
-    let query = supabase.from('questions').select('*');
+    let query = supabase.from('questions').select('*').order('id', { ascending: true });
     if (category_id) query = query.eq('category_id', category_id);
 
     const { data, error } = await query;
