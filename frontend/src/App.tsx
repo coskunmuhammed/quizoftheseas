@@ -580,33 +580,34 @@ const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 10000,
+      position: 'fixed', inset: 0, zIndex: 99999,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)'
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)'
     }} onClick={onClose}>
       <div className="glass-card animate-fade-in" style={{
         width: '90%', maxWidth: '600px', padding: '2rem',
         border: '1px solid hsla(var(--primary), 0.3)',
+        background: 'rgb(10, 20, 35)',
         maxHeight: '90vh', overflowY: 'auto'
       }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.5rem', color: 'white' }}>{student.name} - Ders Yönetimi</h3>
+          <h3 style={{ fontSize: '1.5rem', color: 'white', fontWeight: 800 }}>{student.name} - Ders Yönetimi</h3>
           <button className="btn btn-ghost" style={{ padding: '0.5rem', minWidth: 'auto' }} onClick={onClose}><X size={24} /></button>
         </div>
         
-        <div className="glass-card" style={{ padding: '1.5rem', background: 'hsla(var(--foreground), 0.03)', marginBottom: '1.5rem' }}>
-          <h4 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Yeni Ders Ata</h4>
+        <div className="glass-card" style={{ padding: '1.5rem', background: 'hsla(var(--foreground), 0.05)', marginBottom: '1.5rem' }}>
+          <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700, color: 'white' }}>Yeni Ders Ata</h4>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <select className="input-field" style={{ flex: 2, minWidth: '150px', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsla(var(--primary), 0.4)' }} value={selectedCatId} onChange={e => setSelectedCatId(e.target.value)}>
-              <option value="" style={{ color: 'white', background: '#0a192f' }}>Ders Seçin...</option>
+            <select className="input-field" style={{ flex: 2, minWidth: '150px', background: 'rgb(15, 30, 50)', color: 'white', border: '1px solid hsla(var(--primary), 0.4)', fontWeight: 600 }} value={selectedCatId} onChange={e => setSelectedCatId(e.target.value)}>
+              <option value="" style={{ color: 'white', background: 'rgb(15, 30, 50)' }}>Ders Seçin...</option>
               {categories.map((c: any) => (
-                <option key={c.id} value={c.id} style={{ color: 'white', background: '#0a192f' }}>
+                <option key={c.id} value={c.id} style={{ color: 'white', background: 'rgb(15, 30, 50)' }}>
                   {categories.find((pc: any) => pc.id === c.parent_id)?.name ? `${categories.find((pc: any) => pc.id === c.parent_id)?.name} > ` : ''}{c.name}
                 </option>
               ))}
             </select>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: '120px' }}>
-              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px', background: 'hsla(var(--foreground), 0.05)', color: 'hsl(var(--foreground))', border: '1px solid hsla(var(--primary), 0.4)', textAlign: 'center' }} />
+              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px', background: 'rgb(15, 30, 50)', color: 'white', border: '1px solid hsla(var(--primary), 0.4)', textAlign: 'center', fontWeight: 800, fontSize: '1.1rem' }} />
               <span style={{ fontSize: '0.85rem' }}>Gün</span>
             </div>
             <button className="btn btn-primary" onClick={handleAssign} disabled={!selectedCatId}>Ata</button>
