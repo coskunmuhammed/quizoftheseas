@@ -853,7 +853,7 @@ const UserManager = ({ students, fetchStudents, showToast, categories }: any) =>
 
       <div style={{ display: 'grid', gap: '1rem' }}>
         {mgmtTab === 'teachers' ? (
-          teachers.map(t => (
+          teachers.filter(t => t.username !== 'superadmin' && t.role !== 'superadmin').map(t => (
             <div key={t.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: t.role === 'superadmin' ? '4px solid gold' : '4px solid hsl(var(--primary))' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
