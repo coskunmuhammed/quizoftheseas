@@ -1,0 +1,27 @@
+[
+  {
+    "table": "categories",
+    "status": "exists",
+    "rowCount": 1
+  },
+  {
+    "table": "questions",
+    "status": "exists",
+    "rowCount": 1
+  },
+  {
+    "table": "students",
+    "status": "exists",
+    "rowCount": 1
+  },
+  {
+    "table": "admins",
+    "status": "exists",
+    "rowCount": 1
+  },
+  {
+    "table": "student_results",
+    "status": "exists",
+    "rowCount": 1
+  }
+]

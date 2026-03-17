@@ -16,8 +16,12 @@ import {
   Monitor,
   Sparkles,
   Activity,
-  History
+  History,
+  ShieldAlert,
+  Menu,
+  X
 } from 'lucide-react';
+import { useRef } from 'react';
 
 // --- Dynamic API URL ---
 const getApiBase = () => {
@@ -68,29 +72,26 @@ interface Question {
 
 // --- UI Components ---
 
-const Navbar = ({ user, isAdmin, onLogout, onGoHome, students, fetchStudents, showToast }: any) => {
+const Navbar = ({ user, isAdmin, onLogout, onGoHome, showToast }: any) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   return (
-    <nav className="glass-card" style={{
-      margin: '1.5rem',
-      padding: '1rem',
+    <nav className="glass-card nav-container" style={{
+      margin: '1rem',
+      padding: '0.75rem 1rem',
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: '1rem',
-      border: '1px solid hsla(var(--primary), 0.25)',
-      background: 'hsla(var(--card), 0.7)',
-      position: 'relative',
+      gap: '0.75rem',
       zIndex: 1000,
-      overflow: 'visible'
+      position: 'relative'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer' }} onClick={onGoHome}>
-        <div style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.4rem', borderRadius: '10px' }}>
-          <GraduationCap size={22} color="hsl(var(--primary))" />
+      <div className="nav-logo" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }} onClick={onGoHome}>
+        <div className="nav-icon" style={{ background: 'hsla(var(--primary), 0.15)', padding: '0.4rem', borderRadius: '10px' }}>
+          <GraduationCap size={20} color="hsl(var(--primary))" />
         </div>
-        <span style={{ fontSize: 'min(5vw, 1.2rem)', fontWeight: 900, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>QUIZ OF THE SEAS</span>
+        <span className="nav-title" style={{ fontSize: 'min(4.5vw, 1.1rem)', fontWeight: 900, letterSpacing: '-0.03em', whiteSpace: 'nowrap' }}>QUIZ OF THE SEAS</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div
@@ -113,7 +114,7 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome, students, fetchStudents, sh
           </div>
           <span style={{ color: 'hsla(var(--foreground), 0.95)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
             {user}
-            {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.5rem', fontSize: '0.6rem', border: '1px solid hsla(var(--primary), 0.4)', padding: '2px 6px' }}>HOCA</span>}
+            {isAdmin && <span className="badge badge-primary" style={{ marginLeft: '0.5rem', fontSize: '0.6rem', border: '1px solid hsla(var(--primary), 0.4)', padding: '2px 6px' }}>admin</span>}
           </span>
           <ChevronRight size={16} style={{ transform: showDropdown ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.3s', opacity: 0.5 }} />
         </div>
@@ -122,7 +123,7 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome, students, fetchStudents, sh
         </button>
       </div>
 
-      {showDropdown && isAdmin && (
+      {showDropdown && (
         <div className="glass-card animate-fade-in admin-dropdown" style={{
           position: 'absolute',
           top: '110%',
@@ -136,15 +137,8 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome, students, fetchStudents, sh
           background: 'hsla(var(--card), 0.95)',
           backdropFilter: 'blur(30px)'
         }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--primary))' }}>
-              <User size={18} /> Öğrenci Yönetimi
-            </h3>
-            <StudentManager students={students} fetchStudents={fetchStudents} showToast={showToast} />
-          </div>
-
-          <div style={{ borderTop: '1px solid hsla(var(--foreground), 0.1)', paddingTop: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--primary))' }}>
+          <div style={{ padding: '0.5rem' }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--primary))' }}>
               <Edit size={18} /> Şifre İşlemleri
             </h3>
             <PasswordChanger showToast={showToast} />
@@ -155,91 +149,7 @@ const Navbar = ({ user, isAdmin, onLogout, onGoHome, students, fetchStudents, sh
   );
 };
 
-const StudentManager = ({ students, fetchStudents, showToast }: any) => {
-  const [newStudent, setNewStudent] = useState({ name: '', password: '' });
-  const [duration, setDuration] = useState(30); // Default 30 days
-
-  const getDurationLabel = (days: number) => {
-    if (days === 365) return '1 Yıl';
-    if (days >= 30) return `${Math.floor(days / 30)} Ay ${days % 30 > 0 ? (days % 30) + ' Gün' : ''}`;
-    return `${days} Gün`;
-  };
-
-  const getRemainingDays = (dateStr: string) => {
-    if (!dateStr) return 'Süresiz';
-    const diff = new Date(dateStr).getTime() - new Date().getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days > 0 ? `${days} gün kaldı` : 'Süresi doldu';
-  };
-
-  return (
-    <>
-      <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
-        <input className="input-field" style={{ padding: '0.75rem 1rem' }} placeholder="Öğrenci Adı..." value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} />
-        <input className="input-field" style={{ padding: '0.75rem 1rem' }} placeholder="Şifre..." value={newStudent.password} onChange={e => setNewStudent({ ...newStudent, password: e.target.value })} />
-
-        <div style={{ padding: '0.5rem', background: 'hsla(var(--foreground), 0.03)', borderRadius: '12px', border: '1px solid hsla(var(--primary), 0.1)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600 }}>
-            <span style={{ opacity: 0.6 }}>ERİŞİM SÜRESİ</span>
-            <span style={{ color: 'hsl(var(--primary))' }}>{getDurationLabel(duration)}</span>
-          </div>
-          <input
-            type="range"
-            min="1"
-            max="365"
-            value={duration}
-            onChange={e => setDuration(parseInt(e.target.value))}
-            style={{ width: '100%', accentColor: 'hsl(var(--primary))', cursor: 'pointer' }}
-          />
-        </div>
-
-        <button className="btn btn-primary" style={{ padding: '0.75rem', fontSize: '0.9rem' }} onClick={() => {
-          if (!newStudent.name || !newStudent.password) return;
-          const expiryDate = new Date();
-          expiryDate.setDate(expiryDate.getDate() + duration);
-
-          axios.post(`${API_BASE}/students`, {
-            name: newStudent.name.trim(),
-            password: newStudent.password.trim(),
-            expires_at: expiryDate.toISOString()
-          }).then(() => {
-            setNewStudent({ name: '', password: '' });
-            fetchStudents();
-            showToast('Öğrenci eklendi!');
-          });
-        }}>
-          <Plus size={18} /> Öğrenciyi Kaydet
-        </button>
-      </div>
-      <div style={{ display: 'grid', gap: '0.5rem', maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }} className="admin-dropdown">
-        {students.map((s: any) => {
-          const remaining = getRemainingDays(s.expires_at);
-          const isExpired = remaining === 'Süresi doldu';
-          return (
-            <div key={s.id} className="glass-card" style={{ padding: '0.5rem 0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'hsla(var(--foreground), 0.03)', borderRadius: '12px', opacity: isExpired ? 0.6 : 1 }}>
-              <div style={{ fontSize: '0.9rem' }}>
-                <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {s.name}
-                  {isExpired && <span style={{ fontSize: '0.6rem', background: 'hsl(var(--accent))', color: 'white', padding: '1px 4px', borderRadius: '4px' }}>PASİF</span>}
-                </div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.5, display: 'flex', gap: '0.5rem' }}>
-                  <span>Şifre: {s.password}</span>
-                  <span style={{ color: isExpired ? 'hsl(var(--accent))' : 'hsl(var(--primary))' }}>• {remaining}</span>
-                </div>
-              </div>
-              <button className="btn btn-ghost" style={{ color: 'hsl(var(--accent))', width: 'auto', padding: '0.4rem' }} onClick={() => {
-                axios.delete(`${API_BASE}/students/${s.id}`).then(() => {
-                  fetchStudents();
-                  showToast('Öğrenci silindi');
-                });
-              }}><Trash2 size={14} /></button>
-            </div>
-          );
-        })}
-      </div>
-    </>
-  );
-};
+// --- Deleted StudentManager (integrated into UserManager) ---
 
 const PasswordChanger = ({ showToast }: any) => {
   const [curr, setCurr] = useState('');
@@ -461,11 +371,21 @@ const QuizView = ({ category, onFinish }: any) => {
       const isAdminFlag = localStorage.getItem('isAdmin') === 'true';
 
       if (studentName && !isAdminFlag) {
+        const wrongQs = newAnswers
+          .filter(a => !a.isCorrect)
+          .map(a => ({
+            question_id: a.question.id,
+            question_text: a.question.question_text,
+            selected: a.selected,
+            correct: a.question.correct_option
+          }));
+
         axios.post(`${API_BASE}/results`, {
           student_name: studentName,
           category_id: category.id,
           score: newScore,
-          total: questions.length
+          total: questions.length,
+          wrong_questions: wrongQs
         }).catch(err => console.error('Failed to save result:', err));
       }
 
@@ -489,10 +409,8 @@ const QuizView = ({ category, onFinish }: any) => {
   const currentQ = questions[currentIndex];
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', position: 'relative' }}>
-
-
-      <div className="glass-card" style={{ padding: '3.5rem', position: 'relative' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', width: '100%' }}>
+      <div className="glass-card quiz-container-card" style={{ padding: 'min(3.5rem, 6vw)', position: 'relative' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
           <div>
             <span style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: '0.1em', opacity: 0.4 }}>SORU {currentIndex + 1} / {questions.length}</span>
@@ -502,7 +420,7 @@ const QuizView = ({ category, onFinish }: any) => {
           </div>
         </div>
 
-        <h2 style={{ fontSize: '1.6rem', lineHeight: '1.4', marginBottom: '3rem', fontWeight: 500 }}>{currentQ.question_text}</h2>
+        <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', lineHeight: '1.4', marginBottom: 'clamp(1.5rem, 5vw, 3rem)', fontWeight: 500 }}>{currentQ.question_text}</h2>
 
         {currentQ.image_url && (
           <div style={{ marginBottom: '2.5rem', borderRadius: '1.5rem', overflow: 'hidden', border: '1px solid hsla(var(--foreground), 0.1)' }}>
@@ -583,7 +501,7 @@ const ResultsView = ({ score, total, answers, onBack }: any) => {
           position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px',
           background: 'hsla(var(--primary), 0.1)', borderRadius: '50%', filter: 'blur(40px)'
         }}></div>
-        <h1 style={{ fontSize: '4rem', marginBottom: '0.5rem', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <h1 style={{ fontSize: 'clamp(2.5rem, 10vw, 4rem)', marginBottom: '0.5rem', background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           %{percentage}
         </h1>
         <p style={{ color: 'hsla(var(--foreground), 0.85)', fontSize: '1.1rem', marginBottom: '2rem', fontWeight: 500 }}>{total} Soruda {score} Doğru</p>
@@ -620,7 +538,468 @@ const ResultsView = ({ score, total, answers, onBack }: any) => {
   );
 }
 
-const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
+const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }: any) => {
+  const [assignments, setAssignments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCatId, setSelectedCatId] = useState<string>('');
+  const [duration, setDuration] = useState<number>(30);
+
+  const fetchAssignments = () => {
+    if (!student) return;
+    setLoading(true);
+    axios.get(`${API_BASE}/students/${student.id}/assignments`)
+      .then(res => setAssignments(res.data))
+      .catch(err => showToast('Dersler alınamadı: ' + err.message, 'error'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (isOpen && student) fetchAssignments();
+  }, [isOpen, student]);
+
+  const handleAssign = () => {
+    if (!selectedCatId) return;
+    axios.post(`${API_BASE}/students/${student.id}/assignments`, {
+      category_id: parseInt(selectedCatId),
+      duration_days: duration
+    }).then(() => {
+      showToast('Ders atandı!');
+      fetchAssignments();
+    }).catch(err => showToast('Ders atanamadı: ' + err.message, 'error'));
+  };
+
+  const handleRevoke = (id: number) => {
+    axios.delete(`${API_BASE}/students/assignments/${id}`)
+      .then(() => {
+        showToast('Ders erişimi kaldırıldı');
+        fetchAssignments();
+      }).catch(err => showToast('Kaldırılamadı: ' + err.message, 'error'));
+  };
+
+  if (!isOpen || !student) return null;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 10000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)'
+    }} onClick={onClose}>
+      <div className="glass-card animate-fade-in" style={{
+        width: '90%', maxWidth: '600px', padding: '2rem',
+        border: '1px solid hsla(var(--primary), 0.3)',
+        maxHeight: '90vh', overflowY: 'auto'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.5rem', color: 'white' }}>{student.name} - Ders Yönetimi</h3>
+          <button className="btn btn-ghost" style={{ padding: '0.5rem', minWidth: 'auto' }} onClick={onClose}><X size={24} /></button>
+        </div>
+        
+        <div className="glass-card" style={{ padding: '1.5rem', background: 'hsla(var(--foreground), 0.03)', marginBottom: '1.5rem' }}>
+          <h4 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Yeni Ders Ata</h4>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <select className="input-field" style={{ flex: 2, minWidth: '150px' }} value={selectedCatId} onChange={e => setSelectedCatId(e.target.value)}>
+              <option value="">Ders Seçin...</option>
+              {categories.map((c: any) => (
+                <option key={c.id} value={c.id}>
+                  {categories.find((pc: any) => pc.id === c.parent_id)?.name ? `${categories.find((pc: any) => pc.id === c.parent_id)?.name} > ` : ''}{c.name}
+                </option>
+              ))}
+            </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: '120px' }}>
+              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px' }} />
+              <span style={{ fontSize: '0.85rem' }}>Gün</span>
+            </div>
+            <button className="btn btn-primary" onClick={handleAssign} disabled={!selectedCatId}>Ata</button>
+          </div>
+        </div>
+
+        <div>
+          <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Atanan Dersler</h4>
+          {loading ? (
+            <div style={{ textAlign: 'center', opacity: 0.5, padding: '1rem' }}>Yükleniyor...</div>
+          ) : assignments.length === 0 ? (
+            <div style={{ textAlign: 'center', opacity: 0.5, padding: '2rem' }}>Henüz ders atanmamış.</div>
+          ) : (
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {assignments.map(a => {
+                const isExpired = new Date(a.end_date) < new Date();
+                return (
+                  <div key={a.id} className="glass-card" style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: isExpired ? 0.6 : 1 }}>
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{a.categories?.name}</div>
+                      <div style={{ fontSize: '0.8rem', marginTop: '0.2rem', color: isExpired ? 'hsl(var(--accent))' : 'hsla(var(--foreground), 0.7)' }}>
+                        {isExpired ? 'Süresi Doldu' : `Bitiş: ${new Date(a.end_date).toLocaleDateString('tr-TR')}`}
+                      </div>
+                    </div>
+                    <button className="btn btn-ghost" style={{ color: 'hsl(var(--accent))', padding: '0.5rem', minWidth: 'auto' }} onClick={() => handleRevoke(a.id)}>
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const UserManager = ({ students, fetchStudents, showToast, categories }: any) => {
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [mgmtTab, setMgmtTab] = useState<'teachers' | 'students'>('teachers');
+  const [form, setForm] = useState({ username: '', password: '', role: 'admin', can_add: true, can_edit: true, can_delete: true, can_view_stats: true, can_manage: false });
+  const [newStudent, setNewStudent] = useState({ name: '', password: '' });
+  const [duration, setDuration] = useState(30);
+  const [coursesModalStudent, setCoursesModalStudent] = useState<any>(null);
+
+  const fetchTeachers = () => {
+    setLoading(true);
+    axios.get(`${API_BASE}/admin/users`)
+      .then(res => setTeachers(res.data))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { 
+    if (mgmtTab === 'teachers') fetchTeachers();
+    else fetchStudents();
+  }, [mgmtTab]);
+
+  const getDurationLabel = (days: number) => {
+    if (days === 365) return '1 Yıl';
+    if (days >= 30) return `${Math.floor(days / 30)} Ay ${days % 30 > 0 ? (days % 30) + ' Gün' : ''}`;
+    return `${days} Gün`;
+  };
+
+  const getRemainingDays = (dateStr: string) => {
+    if (!dateStr) return 'Süresiz';
+    const diff = new Date(dateStr).getTime() - new Date().getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? `${days} gün kaldı` : 'Süresi doldu';
+  };
+
+  const handleSaveTeacher = () => {
+    if (!form.username || !form.password) return showToast('Lütfen kullanıcı adı ve şifre girin', 'error');
+    axios.post(`${API_BASE}/admin/users`, {
+      username: form.username,
+      password: form.password,
+      role: form.role,
+      can_add_questions: form.can_add,
+      can_edit_questions: form.can_edit,
+      can_delete_questions: form.can_delete,
+      can_view_stats: form.can_view_stats,
+      can_manage_admins: form.can_manage
+    }).then(() => {
+      showToast('Öğretmen eklendi!');
+      setShowAdd(false);
+      setForm({ username: '', password: '', role: 'admin', can_add: true, can_edit: true, can_delete: true, can_view_stats: true, can_manage: false });
+      fetchTeachers();
+    }).catch(err => showToast('Hata: ' + err.message, 'error'));
+  };
+
+  const handleSaveStudent = () => {
+    if (!newStudent.name || !newStudent.password) return showToast('Lütfen ad ve şifre girin', 'error');
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + duration);
+
+    axios.post(`${API_BASE}/students`, {
+      name: newStudent.name.trim(),
+      password: newStudent.password.trim(),
+      expires_at: expiryDate.toISOString()
+    }).then(() => {
+      setNewStudent({ name: '', password: '' });
+      fetchStudents();
+      showToast('Öğrenci eklendi!');
+      setShowAdd(false);
+    });
+  };
+
+  const togglePermission = (id: number, field: string, current: boolean) => {
+    axios.put(`${API_BASE}/admin/users/${id}`, { [field]: !current })
+      .then(() => fetchTeachers())
+      .catch(err => showToast('Hata: ' + err.message, 'error'));
+  };
+
+  const deleteTeacher = (id: number) => {
+    if (!window.confirm('Bu öğretmeni silmek istediğinize emin misiniz?')) return;
+    axios.delete(`${API_BASE}/admin/users/${id}`).then(() => {
+      showToast('Öğretmen silindi');
+      fetchTeachers();
+    });
+  };
+
+  const deleteStudent = (id: number) => {
+    if (!window.confirm('Bu öğrenciyi silmek istediğinize emin misiniz?')) return;
+    axios.delete(`${API_BASE}/students/${id}`).then(() => {
+      showToast('Öğrenci silindi');
+      fetchStudents();
+    });
+  };
+
+  if (loading && mgmtTab === 'teachers') return (
+    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+      <div className="spinner" style={{ width: '40px', height: '40px' }}></div>
+    </div>
+  );
+
+  return (
+    <div className="animate-fade-in">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2.5rem' }}>
+        <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'hsla(var(--primary), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ShieldAlert size={24} color="hsl(var(--primary))" />
+        </div>
+        <div>
+          <h3 style={{ fontSize: '1.5rem', fontWeight: 900 }}>Kullanıcı Yönetimi</h3>
+          <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>Öğretmen ve öğrenci hesaplarını buradan yönetebilirsiniz.</p>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '2rem', borderBottom: '1px solid hsla(var(--foreground), 0.05)', paddingBottom: '0.5rem' }}>
+          <button 
+            onClick={() => { setMgmtTab('teachers'); setShowAdd(false); }}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              outline: 'none', 
+              cursor: 'pointer', 
+              padding: '0.5rem 0',
+              fontSize: '1.25rem', 
+              fontWeight: 900, 
+              opacity: mgmtTab === 'teachers' ? 1 : 0.4, 
+              color: mgmtTab === 'teachers' ? 'hsl(var(--primary))' : 'hsla(var(--foreground), 0.6)', 
+              transition: 'all 0.3s', 
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            Öğretmenler
+            {mgmtTab === 'teachers' && <div style={{ position: 'absolute', bottom: '-0.6rem', left: 0, right: 0, height: '4px', background: 'hsl(var(--primary))', borderRadius: '2px', boxShadow: '0 2px 10px hsla(var(--primary), 0.4)' }} />}
+          </button>
+          <button 
+            onClick={() => { setMgmtTab('students'); setShowAdd(false); }}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              outline: 'none', 
+              cursor: 'pointer', 
+              padding: '0.5rem 0',
+              fontSize: '1.25rem', 
+              fontWeight: 900, 
+              opacity: mgmtTab === 'students' ? 1 : 0.4, 
+              color: mgmtTab === 'students' ? 'hsl(var(--primary))' : 'hsla(var(--foreground), 0.6)', 
+              transition: 'all 0.3s', 
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            Öğrenciler
+            {mgmtTab === 'students' && <div style={{ position: 'absolute', bottom: '-0.6rem', left: 0, right: 0, height: '4px', background: 'hsl(var(--primary))', borderRadius: '2px', boxShadow: '0 2px 10px hsla(var(--primary), 0.4)' }} />}
+          </button>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>
+          {showAdd ? 'İptal' : `Yeni ${mgmtTab === 'teachers' ? 'Öğretmen' : 'Öğrenci'} Ekle`}
+        </button>
+      </div>
+
+      {showAdd && mgmtTab === 'teachers' && (
+        <div className="glass-card animate-slide-up" style={{ padding: '2rem', marginBottom: '2.5rem', border: '1px solid hsla(var(--primary), 0.3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div>
+              <label style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '0.4rem', display: 'block' }}>KULLANICI ADI</label>
+              <input className="input-field" placeholder="Kullanıcı Adı" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '0.4rem', display: 'block' }}>ŞİFRE</label>
+              <input className="input-field" type="password" placeholder="Şifre" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            </div>
+          </div>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ fontSize: '0.8rem', opacity: 0.6, marginBottom: '1rem', display: 'block' }}>YETKİLER</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+              {[{ label: 'Soru Ekle', field: 'can_add' }, { label: 'Düzenle', field: 'can_edit' }, { label: 'Sil', field: 'can_delete' }, { label: 'İstatistik', field: 'can_view_stats' }, { label: 'Admin Yön.', field: 'can_manage' }].map(p => (
+                <label key={p.field} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.85rem', cursor: 'pointer' }}>
+                  <input type="checkbox" checked={(form as any)[p.field]} onChange={e => setForm({ ...form, [p.field]: e.target.checked })} style={{ accentColor: 'hsl(var(--primary))' }} /> {p.label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <button className="btn btn-primary" style={{ width: '100%', height: '54px' }} onClick={handleSaveTeacher}>Kaydet ve Ekle</button>
+        </div>
+      )}
+
+      {showAdd && mgmtTab === 'students' && (
+        <div className="glass-card animate-slide-up" style={{ padding: '2rem', marginBottom: '2.5rem', border: '1px solid hsla(var(--primary), 0.3)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <input className="input-field" placeholder="Öğrenci Adı" value={newStudent.name} onChange={e => setNewStudent({ ...newStudent, name: e.target.value })} />
+            <input className="input-field" placeholder="Şifre" value={newStudent.password} onChange={e => setNewStudent({ ...newStudent, password: e.target.value })} />
+          </div>
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'hsla(var(--foreground), 0.03)', borderRadius: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600 }}>
+              <span style={{ opacity: 0.6 }}>ERİŞİM SÜRESİ</span>
+              <span style={{ color: 'hsl(var(--primary))' }}>{getDurationLabel(duration)}</span>
+            </div>
+            <input type="range" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '100%', accentColor: 'hsl(var(--primary))' }} />
+          </div>
+          <button className="btn btn-primary" style={{ width: '100%', height: '54px' }} onClick={handleSaveStudent}>Öğrenciyi Kaydet</button>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: '1rem' }}>
+        {mgmtTab === 'teachers' ? (
+          teachers.map(t => (
+            <div key={t.id} className="glass-card" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderLeft: t.role === 'superadmin' ? '4px solid gold' : '4px solid hsl(var(--primary))' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontWeight: 800, fontSize: '1.2rem' }}>{t.username}</span>
+                  <span className="badge" style={{ fontSize: '0.7rem', opacity: 0.7 }}>{t.role.toUpperCase()}</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.75rem' }}>
+                  {[{ label: 'Soru Ekle', field: 'can_add_questions', val: t.can_add_questions }, { label: 'Düzenle', field: 'can_edit_questions', val: t.can_edit_questions }, { label: 'Sil', field: 'can_delete_questions', val: t.can_delete_questions }, { label: 'İstatistik', field: 'can_view_stats', val: t.can_view_stats }, { label: 'Admin Yön.', field: 'can_manage_admins', val: t.can_manage_admins }].map(p => (
+                    <button key={p.field} onClick={() => t.role !== 'superadmin' && togglePermission(t.id, p.field, p.val)} disabled={t.role === 'superadmin'} style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem', borderRadius: '8px', background: p.val ? 'hsla(var(--primary), 0.15)' : 'transparent', color: p.val ? 'hsl(var(--primary))' : 'hsla(var(--foreground), 0.3)', border: '1px solid hsla(var(--foreground), 0.05)' }}>{p.label}</button>
+                  ))}
+                </div>
+              </div>
+              {t.role !== 'superadmin' && <button className="btn btn-ghost" style={{ width: '40px', color: 'hsl(var(--accent))' }} onClick={() => deleteTeacher(t.id)}><Trash2 size={18} /></button>}
+            </div>
+          ))
+        ) : (
+          students.map((s: any) => {
+            const rem = getRemainingDays(s.expires_at);
+            const expired = rem === 'Süresi doldu';
+            return (
+              <div key={s.id} className="glass-card" style={{ padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: expired ? 0.6 : 1 }}>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>{s.name}</div>
+                  <div style={{ fontSize: '0.85rem', opacity: 0.6, marginTop: '0.25rem' }}>Şifre: {s.password} • Öğrenci Hesabı</div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button className="btn btn-ghost" style={{ padding: '0.5rem', width: 'auto' }} onClick={() => setCoursesModalStudent(s)}>
+                    <BookOpen size={18} /> Dersleri Yönet
+                  </button>
+                  <button className="btn btn-ghost" style={{ width: '40px', color: 'hsl(var(--accent))' }} onClick={() => deleteStudent(s.id)}>
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <StudentCoursesModal
+        student={coursesModalStudent}
+        categories={categories || []}
+        isOpen={!!coursesModalStudent}
+        onClose={() => setCoursesModalStudent(null)}
+        showToast={showToast}
+      />
+    </div>
+  );
+};
+
+const AdminPanel = ({ categories, fetchCategories, showToast, permissions, students, fetchStudents }: any) => {
+  const [activeTab, setActiveTab] = useState<'content' | 'stats' | 'teachers'>('content');
+  const [stats, setStats] = useState<any[]>([]);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const scrollToContent = () => {
+    if (window.innerWidth < 1200 && contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: 'smooth' });
+      setShowMobileSidebar(false);
+    }
+  };
+
+  const fetchStats = () => {
+    setLoadingStats(true);
+    axios.get(`${API_BASE}/admin/student-stats`)
+      .then(res => setStats(res.data))
+      .finally(() => setLoadingStats(false));
+  };
+
+  useEffect(() => {
+    if (activeTab === 'stats') fetchStats();
+  }, [activeTab]);
+
+  const groupedStats = stats.reduce((acc: any, r: any) => {
+    const name = r.student_name || 'Bilinmeyen';
+    if (!acc[name]) acc[name] = [];
+    acc[name].push(r);
+    return acc;
+  }, {});
+
+  const renderStudentStats = () => {
+    if (loadingStats) return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+        <div className="spinner" style={{ width: '30px', height: '30px' }}></div>
+      </div>
+    );
+
+    return (
+      <div style={{ display: 'grid', gap: '1.5rem' }}>
+        {Object.entries(groupedStats).map(([name, results]: [string, any]) => {
+          const totalAttempts = (results as any[]).length;
+          const avgScore = Math.round(((results as any[]).reduce((acc: number, r: any) => acc + (r.score / r.total), 0) / totalAttempts) * 100);
+          
+          return (
+            <div key={name} className="glass-card" style={{ padding: '1.5rem', borderLeft: '4px solid hsl(var(--primary))' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h4 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{name}</h4>
+                  <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>{totalAttempts} Test Çözüldü</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'hsl(var(--primary))' }}>%{avgScore}</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.5 }}>ORTALAMA BAŞARI</div>
+                </div>
+              </div>
+              
+              <button 
+                className="btn btn-ghost" 
+                style={{ width: '100%', fontSize: '0.85rem', border: '1px solid hsla(var(--foreground), 0.1)' }}
+                onClick={() => setSelectedStudent(selectedStudent === name ? null : name)}
+              >
+                {selectedStudent === name ? 'Detayları Gizle' : 'Detayları Gör'}
+              </button>
+
+              {selectedStudent === name && (
+                <div className="animate-fade-in" style={{ marginTop: '1.5rem', display: 'grid', gap: '1rem' }}>
+                  {results.map((r: any, idx: number) => (
+                    <div key={idx} style={{ padding: '1rem', background: 'hsla(var(--foreground), 0.03)', borderRadius: '12px', fontSize: '0.9rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                        <span style={{ fontWeight: 600 }}>{r.categories?.name || 'Genel'}</span>
+                        <span style={{ fontWeight: 800, color: r.score / r.total >= 0.7 ? '#10b981' : 'hsl(var(--accent))' }}>{r.score} / {r.total}</span>
+                      </div>
+                      {r.wrong_questions && r.wrong_questions.length > 0 && (
+                        <div style={{ marginTop: '0.5rem', borderTop: '1px solid hsla(var(--foreground), 0.05)', paddingTop: '0.5rem' }}>
+                          <p style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.5, marginBottom: '0.25rem' }}>YANLIŞ YAPILAN SORULAR:</p>
+                          {r.wrong_questions.map((wq: any, widx: number) => (
+                            <div key={widx} style={{ fontSize: '0.8rem', padding: '0.25rem 0', display: 'flex', gap: '0.5rem' }}>
+                              <XCircle size={14} color="hsl(var(--accent))" style={{ flexShrink: 0, marginTop: '2px' }} />
+                              <span>{wq.question_text} <span style={{ opacity: 0.5 }}>(Cevap: {wq.selected?.toUpperCase()} | Doğru: {wq.correct?.toUpperCase()})</span></span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {Object.keys(groupedStats).length === 0 && (
+          <div style={{ textAlign: 'center', opacity: 0.5, padding: '2rem' }}>Henüz veri bulunmuyor.</div>
+        )}
+      </div>
+    );
+  };
   const [newCat, setNewCat] = useState('');
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editingCatName, setEditingCatName] = useState('');
@@ -808,7 +1187,7 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
             cursor: 'pointer',
             borderLeft: depth > 0 ? '2px solid hsla(var(--primary), 0.3)' : 'none'
           }}
-          onClick={() => { setSelectedCatId(c.id); fetchQs(c.id); }}
+          onClick={() => { setSelectedCatId(c.id); fetchQs(c.id); scrollToContent(); }}
         >
           {editingCatId === c.id ? (
             <div style={{ display: 'flex', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
@@ -829,8 +1208,12 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
                     <Plus size={14} />
                   </button>
                 )}
-                <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto' }} onClick={(e) => { e.stopPropagation(); setEditingCatId(c.id); setEditingCatName(c.name); }}><Edit size={14} /></button>
-                <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto', color: 'hsl(var(--accent))' }} onClick={(e) => { e.stopPropagation(); deleteCat(c.id); }}><Trash2 size={14} /></button>
+                {permissions?.can_edit_questions !== false && (
+                  <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto' }} onClick={(e) => { e.stopPropagation(); setEditingCatId(c.id); setEditingCatName(c.name); }}><Edit size={14} /></button>
+                )}
+                {permissions?.can_delete_questions !== false && (
+                  <button className="btn btn-ghost" style={{ padding: '0.4rem', width: 'auto', color: 'hsl(var(--accent))' }} onClick={(e) => { e.stopPropagation(); deleteCat(c.id); }}><Trash2 size={14} /></button>
+                )}
               </div>
             </div>
           )}
@@ -842,59 +1225,124 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
 
   return (
     <div className="animate-fade-in dash-layout">
-      <aside className="dash-sidebar" style={{ position: 'sticky', top: '2rem' }}>
-        <div className="glass-card shadow-lg" style={{ padding: '1.75rem', background: 'rgba(2, 6, 10, 0.6)' }}>
-          <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem' }}>
-            <BookOpen size={22} color="hsl(var(--primary))" />
-            Kategoriler
-          </h3>
+      {/* Mobile Sidebar Toggle */}
+      <div className="mobile-admin-toggle" style={{ display: 'none', position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 1001 }}>
+        <button className="btn btn-primary" style={{ width: '60px', height: '60px', borderRadius: '50%', boxShadow: '0 8px 25px hsla(var(--primary), 0.5)' }} onClick={() => setShowMobileSidebar(!showMobileSidebar)}>
+          <Menu size={24} />
+        </button>
+      </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            {parentCatId && (
-              <div style={{ fontSize: '0.8rem', color: 'hsl(var(--primary))', display: 'flex', justifyContent: 'space-between' }}>
-                <span>{categories.find((cat: any) => cat.id === parentCatId)?.name} altına ekleniyor</span>
-                <span style={{ cursor: 'pointer' }} onClick={() => setParentCatId(null)}>Vazgeç</span>
+      <aside className={`dash-sidebar ${showMobileSidebar ? 'mobile-open' : ''}`} style={{ position: 'sticky', top: '2rem' }}>
+        {/* Mobile Sidebar Close Button */}
+        <button 
+          className="btn btn-ghost mobile-sidebar-close" 
+          style={{ display: 'none', position: 'absolute', top: '1rem', right: '1rem', padding: '0.5rem', minWidth: 'auto' }}
+          onClick={() => setShowMobileSidebar(false)}
+        >
+          <X size={24} />
+        </button>
+
+        <div className="dash-tabs" style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem', background: 'hsla(var(--foreground), 0.05)', padding: '0.3rem', borderRadius: '0.8rem' }}>
+          <button 
+            className={`btn ${activeTab === 'content' ? 'btn-primary' : 'btn-ghost'}`} 
+            style={{ flex: 1, padding: '0.6rem 0.25rem', fontSize: '0.75rem' }}
+            onClick={() => setActiveTab('content')}
+          >
+            İçerik
+          </button>
+          <button 
+            className={`btn ${activeTab === 'stats' ? 'btn-primary' : 'btn-ghost'}`} 
+            style={{ flex: 1, padding: '0.6rem 0.25rem', fontSize: '0.75rem' }}
+            onClick={() => setActiveTab('stats')}
+          >
+            İstatistik
+          </button>
+          {permissions?.can_manage_admins !== false && (
+            <button 
+              className={`btn ${activeTab === 'teachers' ? 'btn-primary' : 'btn-ghost'}`} 
+              style={{ flex: 1, padding: '0.6rem 0.25rem', fontSize: '0.75rem' }}
+              onClick={() => setActiveTab('teachers')}
+            >
+              Yönetim
+            </button>
+          )}
+        </div>
+
+        {activeTab === 'content' ? (
+          <div className="glass-card shadow-lg" style={{ padding: '1.75rem', background: 'rgba(2, 6, 10, 0.6)' }}>
+            <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem' }}>
+              <BookOpen size={22} color="hsl(var(--primary))" />
+              Kategoriler
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              {parentCatId && (
+                <div style={{ fontSize: '0.8rem', color: 'hsl(var(--primary))', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{categories.find((cat: any) => cat.id === parentCatId)?.name} altına ekleniyor</span>
+                  <span style={{ cursor: 'pointer' }} onClick={() => setParentCatId(null)}>Vazgeç</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <input className="input-field" placeholder={parentCatId ? "Alt Kategori Adı..." : "Yeni Kategori..."} value={newCat} onChange={e => setNewCat(e.target.value)} />
+                {permissions?.can_add_questions !== false && (
+                  <button className="btn btn-primary" style={{ width: '50px', height: '50px', padding: 0, borderRadius: '14px', flexShrink: 0 }} onClick={addCat}>
+                    <Plus size={24} />
+                  </button>
+                )}
               </div>
-            )}
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <input className="input-field" placeholder={parentCatId ? "Alt Kategori Adı..." : "Yeni Kategori..."} value={newCat} onChange={e => setNewCat(e.target.value)} />
-              <button className="btn btn-primary" style={{ width: '50px', height: '50px', padding: 0, borderRadius: '14px', flexShrink: 0 }} onClick={addCat}>
-                <Plus size={24} />
-              </button>
+            </div>
+
+            <div style={{ display: 'grid', gap: '0.75rem', maxHeight: '600px', overflowY: 'auto' }}>
+              {renderCats()}
             </div>
           </div>
-
-          <div style={{ display: 'grid', gap: '0.75rem', maxHeight: '600px', overflowY: 'auto' }}>
-            {renderCats()}
+        ) : (
+          <div className="glass-card shadow-lg" style={{ padding: '1.75rem', background: 'rgba(2, 6, 10, 0.6)' }}>
+            <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.25rem' }}>
+              <Activity size={22} color="hsl(var(--primary))" />
+              Sınıf Özeti
+            </h3>
+            <p style={{ fontSize: '0.85rem', opacity: 0.6 }}>Tüm öğrencilerin başarı durumlarını ve çözdükleri test sayılarını buradan takip edebilirsiniz.</p>
           </div>
-
-
-
-        </div>
+        )}
       </aside>
-
-      <div>
-        {selectedCatId ? (
+ 
+      <div style={{ minHeight: '80vh' }} ref={contentRef}>
+        {activeTab === 'teachers' && permissions?.can_manage_admins !== false ? (
+          <UserManager students={students} fetchStudents={fetchStudents} showToast={showToast} categories={categories} />
+        ) : activeTab === 'stats' ? (
+          <div className="animate-fade-in">
+            <h3 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.75rem', fontWeight: 900 }}>
+              <Activity size={32} color="hsl(var(--primary))" /> 
+              Öğrenci Performans Takibi
+            </h3>
+            {permissions?.can_view_stats !== false ? renderStudentStats() : (
+              <div style={{ textAlign: 'center', padding: '4rem', opacity: 0.5 }}>
+                Bu bölümü görüntüleme yetkiniz bulunmuyor.
+              </div>
+            )}
+          </div>
+        ) : selectedCatId ? (
           <>
             <div className="glass-card glow-primary" style={{ padding: '3rem' }}>
               <h3 style={{ fontSize: '1.75rem', marginBottom: '3.5rem' }}>{isEditingQ ? 'Soruyu Düzenle' : 'Yeni Soru Ekle'}</h3>
               <div style={{ display: 'grid', gap: '1rem' }}>
                 <textarea className="input-field" placeholder="Soru metni..." value={qForm.text} onChange={e => setQForm({ ...qForm, text: e.target.value })} style={{ minHeight: '140px' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.75rem' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 600 }}>GÖRSEL</label>
+                    <label style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 600 }}>GÖRSEL</label>
                     <FileUpload currentFile={qForm.img} onUpload={(url: string) => setQForm({ ...qForm, img: url })} showToast={showToast} accept="image/*" type="image" />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 600 }}>VİDEO</label>
+                    <label style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 600 }}>VİDEO</label>
                     <FileUpload currentFile={qForm.video} onUpload={(url: string) => setQForm({ ...qForm, video: url })} showToast={showToast} accept="video/*" type="video" />
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <label style={{ fontSize: '0.8rem', opacity: 0.6, fontWeight: 600 }}>SES</label>
+                    <label style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 600 }}>SES</label>
                     <FileUpload currentFile={qForm.audio} onUpload={(url: string) => setQForm({ ...qForm, audio: url })} showToast={showToast} accept="audio/*" type="audio" />
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem' }}>
                   {['a', 'b', 'c', 'd', 'e'].map(opt => (
                     <input key={opt} className="input-field" placeholder={`Seçenek ${opt.toUpperCase()}`} value={(qForm as any)[opt]} onChange={e => setQForm({ ...qForm, [opt]: e.target.value })} />
                   ))}
@@ -924,8 +1372,12 @@ const AdminPanel = ({ categories, fetchCategories, showToast }: any) => {
                         <p style={{ fontWeight: 600 }}>{sq.question_text}</p>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="btn btn-ghost" onClick={() => startEditQ(sq)}><Edit size={18} /></button>
-                        <button className="btn btn-ghost" style={{ color: 'hsl(var(--accent))' }} onClick={() => deleteQ(sq.id)}><Trash2 size={18} /></button>
+                        {permissions?.can_edit_questions !== false && (
+                          <button className="btn btn-ghost" onClick={() => startEditQ(sq)}><Edit size={18} /></button>
+                        )}
+                        {permissions?.can_delete_questions !== false && (
+                          <button className="btn btn-ghost" style={{ color: 'hsl(var(--accent))' }} onClick={() => deleteQ(sq.id)}><Trash2 size={18} /></button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -955,7 +1407,6 @@ export default function App() {
   const [view, setView] = useState<'dash' | 'quiz' | 'res' | 'admin'>('dash');
   const [loginVal, setLoginVal] = useState('');
   const [password, setPassword] = useState('');
-  const [loginRole, setLoginRole] = useState<'student' | 'admin'>('student');
   const [categories, setCategories] = useState<Category[]>([]);
   const [selCat, setSelCat] = useState<Category | null>(null);
   const [result, setResult] = useState<any>(null);
@@ -963,6 +1414,7 @@ export default function App() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [studentResults, setStudentResults] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any>(JSON.parse(localStorage.getItem('adminPermissions') || '{}'));
 
   const fetchStudents = () => {
     axios.get(`${API_BASE}/students`).then(res => setStudents(res.data));
@@ -980,7 +1432,11 @@ export default function App() {
   const [selectedParentId, setSelectedParentId] = useState<number | null>(null);
 
   const fetchCats = () => {
-    axios.get(`${API_BASE}/categories`)
+    const isAdm = localStorage.getItem('isAdmin') === 'true';
+    const sId = localStorage.getItem('studentId');
+    const url = !isAdm && sId ? `${API_BASE}/categories?student_id=${sId}` : `${API_BASE}/categories`;
+
+    axios.get(url)
       .then(res => setCategories(res.data))
       .catch(err => {
         setApiError('API Bağlantı Hatası: ' + err.message);
@@ -1000,65 +1456,56 @@ export default function App() {
     e.preventDefault();
     const trimmedVal = loginVal.trim();
 
-    if (loginRole === 'admin') {
-      try {
-        const res = await axios.post(`${API_BASE}/admin/login`, { username: trimmedVal, password });
-        if (res.data.success) {
+    if (!trimmedVal || !password) return showToast('Lütfen bilgilerinizi girin', 'error');
+
+    try {
+      const res = await axios.post(`${API_BASE}/login`, { username: trimmedVal, password });
+      if (res.data.success) {
+        const { userType, username, role, permissions } = res.data;
+        
+        if (userType === 'admin') {
           setIsAdmin(true);
+          setPermissions(permissions);
           localStorage.setItem('isAdmin', 'true');
-          localStorage.setItem('adminUsername', trimmedVal); // Store for later use in password change
-          localStorage.setItem('adminRole', res.data.role || 'admin');
-          setUser(res.data.role === 'superadmin' ? 'Süper Admin' : 'Admin Hoca');
-          localStorage.setItem('studentName', res.data.role === 'superadmin' ? 'Süper Admin' : 'Admin Hoca');
-          showToast(res.data.message || 'Hoş geldiniz! ⚓');
+          localStorage.setItem('adminUsername', username);
+          localStorage.setItem('adminRole', role);
+          localStorage.setItem('adminPermissions', JSON.stringify(permissions));
+          setUser(role === 'superadmin' ? 'süper admin' : 'admin');
+          localStorage.setItem('studentName', role === 'superadmin' ? 'süper admin' : 'admin');
+          showToast(`Hoş geldiniz, ${username}! ⚓`);
           setView('admin');
         } else {
-          showToast('Hatalı admin girişi!', 'error');
-        }
-      } catch (err: any) {
-        showToast(err.response?.data?.error || 'Hatalı admin girişi!', 'error');
-      }
-    } else {
-      if (trimmedVal) {
-        try {
-          // Check student credentials via API
-          const res = await axios.get(`${API_BASE}/students`);
-          const student = res.data.find((s: any) => s.name.toLowerCase() === trimmedVal.toLowerCase());
-
-          if (student && student.password === password) {
-            // Access Duration Check
-            if (student.expires_at) {
-              const expiry = new Date(student.expires_at);
-              if (expiry < new Date()) {
-                return showToast('Erişim süreniz dolmuş. Lütfen hocanızla iletişime geçin.', 'error');
-              }
-            }
-
-            setUser(student.name);
-            localStorage.setItem('studentName', student.name);
-            fetchStudentResults(student.name);
-            showToast(`Hoş geldin, ${student.name}! Başarılar dileriz. 🌊`);
-            setView('dash');
-          } else if (student) {
-            showToast('Hatalı öğrenci şifresi!', 'error');
-          } else {
-            showToast('Böyle bir öğrenci kaydı bulunamadı. Lütfen hocanıza danışın.', 'error');
-          }
-        } catch (err) {
-          console.error('Login error:', err);
-          showToast('Bağlantı hatası!', 'error');
+          setIsAdmin(false);
+          setUser(username);
+          localStorage.setItem('studentName', username);
+          if (res.data.student_id) localStorage.setItem('studentId', res.data.student_id);
+          localStorage.setItem('isAdmin', 'false');
+          // Re-fetch categories dynamically for the specific student
+          const url = `${API_BASE}/categories?student_id=${res.data.student_id}`;
+          axios.get(url).then(r => setCategories(r.data)).catch(console.error);
+          fetchStudentResults(username);
+          showToast(`Hoş geldin, ${username}! Başarılar dileriz. 🌊`);
+          setView('dash');
         }
       }
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Giriş başarısız! Lütfen bilgilerinizi kontrol edin.', 'error');
     }
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAdmin(false);
+    setPermissions({});
     localStorage.removeItem('studentName');
+    localStorage.removeItem('studentId');
     localStorage.removeItem('isAdmin');
     localStorage.removeItem('adminUsername');
+    localStorage.removeItem('adminRole');
+    localStorage.removeItem('adminPermissions');
     setView('dash');
+    // Fetch all categories for unauthenticated view
+    axios.get(`${API_BASE}/categories`).then(r => setCategories(r.data)).catch(console.error);
   };
 
   if (!user) {
@@ -1073,28 +1520,19 @@ export default function App() {
             <p style={{ opacity: 0.6, fontWeight: 500 }}>Bilgi deryasında bir yolculuğa hazır mısın?</p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', background: 'hsla(var(--foreground), 0.05)', padding: '0.5rem', borderRadius: '1.25rem', marginBottom: '2.5rem' }}>
-            <button className={`btn ${loginRole === 'student' ? 'btn-primary' : 'btn-ghost'}`} style={{ flex: 1, textTransform: 'uppercase' }} onClick={() => setLoginRole('student')}>Öğrenci</button>
-            <button className={`btn ${loginRole === 'admin' ? 'btn-primary' : 'btn-ghost'}`} style={{ flex: 1, textTransform: 'uppercase' }} onClick={() => setLoginRole('admin')}>Hoca</button>
-          </div>
-
           <form onSubmit={handleLogin} style={{ display: 'grid', gap: '1.5rem' }}>
             <div className="form-heading">
-              <label>{loginRole === 'student' ? 'Adınız Soyadınız' : 'Hoca Kullanıcı Adı'}</label>
+              <label>Kullanıcı Adı</label>
             </div>
-            <input className="input-field" placeholder={loginRole === 'student' ? 'Ahmet Yılmaz' : 'Kullanıcı adı'} value={loginVal} onChange={e => setLoginVal(e.target.value)} required />
+            <input className="input-field" placeholder="Kullanıcı adınızı girin" value={loginVal} onChange={e => setLoginVal(e.target.value)} required />
 
-            {(loginRole === 'admin' || loginRole === 'student') && (
-              <>
-                <div className="form-heading">
-                  <label>Şifre</label>
-                </div>
-                <input className="input-field" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
-              </>
-            )}
+            <div className="form-heading">
+              <label>Şifre</label>
+            </div>
+            <input className="input-field" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
 
             <button type="submit" className="btn btn-primary" style={{ height: '4.5rem', marginTop: '1.5rem', fontSize: '1.1rem' }}>
-              {loginRole === 'admin' ? 'YÖNETİM PANELİNE GİR' : 'DERSE KATIL'}
+              Giriş Yap
               <ChevronRight size={22} />
             </button>
           </form>
@@ -1119,8 +1557,6 @@ export default function App() {
         isAdmin={isAdmin}
         onLogout={handleLogout}
         onGoHome={() => { setView('dash'); setSelectedParentId(null); }}
-        students={students}
-        fetchStudents={fetchStudents}
         showToast={showToast}
       />
 
@@ -1128,7 +1564,7 @@ export default function App() {
         {view === 'dash' && (
           <div className="animate-fade-in">
             {!isAdmin && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
                 <div className="glass-card" style={{ padding: '2rem', borderLeft: '6px solid hsl(var(--primary))' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h3 style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -1163,7 +1599,7 @@ export default function App() {
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.25rem' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                   {selectedParentId && (
@@ -1180,7 +1616,7 @@ export default function App() {
               {isAdmin && (
                 <button className="btn btn-primary" onClick={() => setView('admin')}>
                   <Monitor size={20} />
-                  Hoca Paneli
+                  admin paneli
                 </button>
               )}
             </div>
@@ -1197,8 +1633,8 @@ export default function App() {
                       setView('quiz');
                     }
                   }}>
-                    <div className="category-icon shadow-lg">
-                      <BookOpen size={28} color="white" />
+                    <div className="category-icon shadow-lg" style={{ width: 'clamp(48px, 10vw, 64px)', height: 'clamp(48px, 10vw, 64px)' }}>
+                      <BookOpen size={24} color="white" />
                     </div>
                     <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>{cat.name}</h3>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'hsl(var(--primary))', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -1232,7 +1668,14 @@ export default function App() {
         )}
 
         {isAdmin && view === 'admin' && (
-          <AdminPanel categories={categories} fetchCategories={fetchCats} showToast={showToast} />
+          <AdminPanel 
+            categories={categories} 
+            fetchCategories={fetchCats} 
+            showToast={showToast} 
+            permissions={permissions} 
+            students={students}
+            fetchStudents={fetchStudents}
+          />
         )}
       </main>
       {toast && (

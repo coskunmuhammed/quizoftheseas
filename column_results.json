@@ -1,0 +1,65 @@
+{
+  "categories": {
+    "status": "exists",
+    "columns": [
+      "id",
+      "name",
+      "parent_id"
+    ]
+  },
+  "questions": {
+    "status": "exists",
+    "columns": [
+      "id",
+      "category_id",
+      "question_text",
+      "option_a",
+      "option_b",
+      "option_c",
+      "option_d",
+      "correct_option",
+      "explanation",
+      "image_url",
+      "option_e",
+      "video_url",
+      "audio_url"
+    ]
+  },
+  "students": {
+    "status": "exists",
+    "columns": [
+      "id",
+      "name",
+      "password",
+      "created_at",
+      "expires_at"
+    ]
+  },
+  "admins": {
+    "status": "exists",
+    "columns": [
+      "id",
+      "username",
+      "password",
+      "created_at",
+      "role",
+      "can_add_questions",
+      "can_edit_questions",
+      "can_delete_questions",
+      "can_view_stats",
+      "can_manage_admins"
+    ]
+  },
+  "student_results": {
+    "status": "exists",
+    "columns": [
+      "id",
+      "student_name",
+      "category_id",
+      "score",
+      "total",
+      "completed_at",
+      "wrong_questions"
+    ]
+  }
+}

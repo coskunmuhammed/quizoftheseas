@@ -5,9 +5,31 @@ const router = Router();
 
 // Categories
 router.get('/categories', async (req, res) => {
-    const { data, error } = await supabase.from('categories').select('*').order('id', { ascending: true });
-    if (error) return res.status(500).json(error);
-    res.json(data);
+    const { student_id } = req.query;
+
+    if (student_id) {
+        // Fetch categories joined with assignments for this student
+        const { data, error } = await supabase
+            .from('student_category_assignments')
+            .select('category_id, end_date, categories(*)')
+            .eq('student_id', student_id)
+            .gte('end_date', new Date().toISOString());
+
+        if (error) return res.status(500).json(error);
+        
+        // Extract categories and include end_date if needed
+        const categories = (data || []).filter(assignment => assignment.categories).map((assignment: any) => ({
+            ...assignment.categories,
+            assignment_end_date: assignment.end_date
+        }));
+        
+        return res.json(categories);
+    } else {
+        // Normal fetch for admin
+        const { data, error } = await supabase.from('categories').select('*').order('id', { ascending: true });
+        if (error) return res.status(500).json(error);
+        res.json(data);
+    }
 });
 
 router.post('/categories', async (req, res) => {
@@ -90,49 +112,177 @@ router.delete('/students/:id', async (req, res) => {
     res.status(204).send();
 });
 
-// Admin Auth
-router.post('/admin/login', async (req, res) => {
+// Student Assignments
+router.get('/students/:id/assignments', async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabase
+        .from('student_category_assignments')
+        .select('*, categories(*)')
+        .eq('student_id', id);
+
+    if (error) return res.status(500).json(error);
+    res.json(data);
+});
+
+router.post('/students/:id/assignments', async (req, res) => {
+    const { id } = req.params;
+    const { category_id, duration_days } = req.body;
+    
+    const end_date = new Date();
+    end_date.setDate(end_date.getDate() + parseInt(duration_days || 30));
+
+    const { data, error } = await supabase
+        .from('student_category_assignments')
+        .insert([{
+            student_id: id,
+            category_id,
+            end_date: end_date.toISOString()
+        }])
+        .select('*, categories(*)');
+
+    if (error) return res.status(500).json(error);
+    res.status(201).json(data ? data[0] : null);
+});
+
+router.delete('/students/assignments/:assignment_id', async (req, res) => {
+    const { assignment_id } = req.params;
+    const { error } = await supabase
+        .from('student_category_assignments')
+        .delete()
+        .eq('id', assignment_id);
+
+    if (error) return res.status(500).json(error);
+    res.status(204).send();
+});
+
+// Unified Login
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
+    const trimmedUsername = username?.trim();
 
-    // In a real app, we'd use a better auth system, but for this architecture
-    // we check a dedicated 'admins' table or just use existing logic if simpler.
-    // The user requested a system to change password, implying it should be persistent.
-
-    const { data: admin, error } = await supabase
+    // 1. Try Admin Login
+    const { data: admin, error: adminError } = await supabase
         .from('admins')
-        .select('id, username, password, role')
-        .eq('username', username)
+        .select('*')
+        .eq('username', trimmedUsername)
         .single();
 
-    if (error || !admin) {
-        // Fallback for first time if table doesn't exist or empty
-        if (username === 'superadmin' && password === '0142753869') {
-            const { error: insertError } = await supabase
-                .from('admins')
-                .insert([{ username: 'superadmin', password: '0142753869', role: 'superadmin' }]);
-
-            if (!insertError) {
-                return res.json({ success: true, message: 'Hoş geldiniz, Süper Admin! (İlk kurulum tamamlandı)', role: 'superadmin' });
-            }
+    if (!adminError && admin) {
+        if (admin.password === password) {
+            return res.json({
+                success: true,
+                userType: 'admin',
+                role: admin.role || 'admin',
+                username: admin.username,
+                permissions: {
+                    can_add_questions: admin.can_add_questions ?? true,
+                    can_edit_questions: admin.can_edit_questions ?? true,
+                    can_delete_questions: admin.can_delete_questions ?? true,
+                    can_view_stats: admin.can_view_stats ?? true,
+                    can_manage_admins: admin.can_manage_admins ?? (admin.role === 'superadmin')
+                }
+            });
+        } else {
+            return res.status(401).json({ error: 'Hatalı şifre' });
         }
-
-        if (username === 'admin' && password === 'admin123') {
-            const { error: insertError } = await supabase
-                .from('admins')
-                .insert([{ username: 'admin', password: 'admin123', role: 'admin' }]);
-
-            if (!insertError) {
-                return res.json({ success: true, message: 'Hoş geldiniz, Hocam! (İlk kurulum tamamlandı)', role: 'admin' });
-            }
-        }
-        return res.status(401).json({ error: 'Hatalı kullanıcı adı veya şifre' });
     }
 
-    if (admin.password === password) {
-        res.json({ success: true, role: admin.role || 'admin' });
-    } else {
-        res.status(401).json({ error: 'Hatalı şifre' });
+    // 2. Try Student Login
+    const { data: students, error: studentError } = await supabase
+        .from('students')
+        .select('*')
+        .ilike('name', trimmedUsername);
+
+    const student = students && students.length > 0 ? students[0] : null;
+
+    if (!studentError && student) {
+        if (student.password === password) {
+            // Check expiry
+            if (student.expires_at && new Date(student.expires_at) < new Date()) {
+                return res.status(403).json({ error: 'Erişim süreniz dolmuş' });
+            }
+            return res.json({
+                success: true,
+                userType: 'student',
+                username: student.name,
+                student_id: student.id,
+                role: 'student'
+            });
+        } else {
+            return res.status(401).json({ error: 'Hatalı şifre' });
+        }
     }
+
+    // 3. Fallback for first-time superadmin/admin if tables are empty/migrating
+    if (trimmedUsername === 'superadmin' && password === '0142753869') {
+        const { error: insertError } = await supabase
+            .from('admins')
+            .insert([{ username: 'superadmin', password: '0142753869', role: 'superadmin', can_manage_admins: true }]);
+
+        if (!insertError || insertError.code === '23505') { // 23505 is unique violation
+            return res.json({
+                success: true,
+                userType: 'admin',
+                role: 'superadmin',
+                username: 'superadmin',
+                permissions: { can_add_questions: true, can_edit_questions: true, can_delete_questions: true, can_view_stats: true, can_manage_admins: true }
+            });
+        }
+    }
+
+    if (trimmedUsername === 'admin' && password === 'admin123') {
+        const { error: insertError } = await supabase
+            .from('admins')
+            .insert([{ username: 'admin', password: 'admin123', role: 'admin' }]);
+
+        if (!insertError || insertError.code === '23505') {
+            return res.json({
+                success: true,
+                userType: 'admin',
+                role: 'admin',
+                username: 'admin',
+                permissions: { can_add_questions: true, can_edit_questions: true, can_delete_questions: true, can_view_stats: true, can_manage_admins: false }
+            });
+        }
+    }
+
+    res.status(401).json({ error: 'Hatalı kullanıcı adı veya şifre' });
+});
+
+// Admin User Management
+router.get('/admin/users', async (req, res) => {
+    const { data, error } = await supabase.from('admins').select('id, username, role, can_add_questions, can_edit_questions, can_delete_questions, can_view_stats, can_manage_admins').order('id', { ascending: true });
+    if (error) return res.status(500).json(error);
+    res.json(data);
+});
+
+router.post('/admin/users', async (req, res) => {
+    const { username, password, role, can_add_questions, can_edit_questions, can_delete_questions, can_view_stats, can_manage_admins } = req.body;
+    const { data, error } = await supabase.from('admins').insert([{
+        username, password, role: role || 'admin',
+        can_add_questions: can_add_questions ?? true,
+        can_edit_questions: can_edit_questions ?? true,
+        can_delete_questions: can_delete_questions ?? true,
+        can_view_stats: can_view_stats ?? true,
+        can_manage_admins: can_manage_admins ?? false
+    }]).select();
+
+    if (error) return res.status(500).json(error);
+    res.status(201).json(data[0]);
+});
+
+router.put('/admin/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('admins').update(req.body).eq('id', id).select();
+    if (error) return res.status(500).json(error);
+    res.json(data[0]);
+});
+
+router.delete('/admin/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { error } = await supabase.from('admins').delete().eq('id', id);
+    if (error) return res.status(500).json(error);
+    res.status(204).send();
 });
 
 router.post('/admin/change-password', async (req, res) => {
@@ -169,10 +319,20 @@ router.get('/results', async (req, res) => {
     res.json(data);
 });
 
+router.get('/admin/student-stats', async (req, res) => {
+    const { data, error } = await supabase
+        .from('student_results')
+        .select('*, categories(name)')
+        .order('completed_at', { ascending: false });
+
+    if (error) return res.status(500).json(error);
+    res.json(data);
+});
+
 router.post('/results', async (req, res) => {
-    const { student_name, category_id, score, total } = req.body;
+    const { student_name, category_id, score, total, wrong_questions } = req.body;
     const { data, error } = await supabase.from('student_results').insert([{
-        student_name, category_id, score, total
+        student_name, category_id, score, total, wrong_questions: wrong_questions || []
     }]).select();
 
     if (error) return res.status(500).json(error);
