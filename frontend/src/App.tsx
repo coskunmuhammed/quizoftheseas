@@ -597,16 +597,16 @@ const StudentCoursesModal = ({ student, categories, isOpen, onClose, showToast }
         <div className="glass-card" style={{ padding: '1.5rem', background: 'hsla(var(--foreground), 0.03)', marginBottom: '1.5rem' }}>
           <h4 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Yeni Ders Ata</h4>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <select className="input-field" style={{ flex: 2, minWidth: '150px' }} value={selectedCatId} onChange={e => setSelectedCatId(e.target.value)}>
-              <option value="">Ders Seçin...</option>
+            <select className="input-field" style={{ flex: 2, minWidth: '150px', background: 'hsla(var(--foreground), 0.05)', color: 'hsl(var(--foreground))', border: '1px solid hsla(var(--primary), 0.4)' }} value={selectedCatId} onChange={e => setSelectedCatId(e.target.value)}>
+              <option value="" style={{ color: 'black' }}>Ders Seçin...</option>
               {categories.map((c: any) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} style={{ color: 'black' }}>
                   {categories.find((pc: any) => pc.id === c.parent_id)?.name ? `${categories.find((pc: any) => pc.id === c.parent_id)?.name} > ` : ''}{c.name}
                 </option>
               ))}
             </select>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, minWidth: '120px' }}>
-              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px' }} />
+              <input type="number" className="input-field" min="1" max="365" value={duration} onChange={e => setDuration(parseInt(e.target.value))} style={{ width: '80px', background: 'hsla(var(--foreground), 0.05)', color: 'hsl(var(--foreground))', border: '1px solid hsla(var(--primary), 0.4)', textAlign: 'center' }} />
               <span style={{ fontSize: '0.85rem' }}>Gün</span>
             </div>
             <button className="btn btn-primary" onClick={handleAssign} disabled={!selectedCatId}>Ata</button>
